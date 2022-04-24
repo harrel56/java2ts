@@ -17,6 +17,8 @@ public class ClassUtil {
     public static List<Method> getPublicMethods(Class<?> clazz) {
         return Arrays.stream(clazz.getDeclaredMethods())
                 .filter(m -> Modifier.isPublic(m.getModifiers()))
+                .filter(m -> !Modifier.isStatic(m.getModifiers()))
+                .filter(m -> m.getTypeParameters().length == 0)
                 .toList();
     }
 }

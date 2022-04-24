@@ -1,11 +1,9 @@
 package org.harrel.java2ts;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.Parameter;
-import java.lang.reflect.Type;
+import java.lang.reflect.*;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class TsGenerator {
 
@@ -62,10 +60,11 @@ public class TsGenerator {
             return incompleteTypes.get(clazz);
         }
 
-        Set<ComplexType> tsSuperTypes = new LinkedHashSet<>();
+        List<GenericType> tsGenericTypes = getGenericTypes(clazz.getTypeParameters());
+        List<ComplexType> tsSuperTypes = new ArrayList<>();
         Map<String, TsType> tsFields = new LinkedHashMap<>();
         Map<String, FunctionType> tsFunctions = new LinkedHashMap<>();
-        ComplexType complexType = new ComplexType(clazz.getSimpleName(), tsSuperTypes, tsFields, tsFunctions);
+        ComplexType complexType = new ComplexType(clazz.getSimpleName(), tsGenericTypes, tsSuperTypes, tsFields, tsFunctions);
         incompleteTypes.put(clazz, complexType);
 
         for (Class<?> superType : getSuperTypes(clazz)) {
@@ -78,10 +77,10 @@ public class TsGenerator {
 
         for (Method method : ClassUtil.getPublicMethods(clazz)) {
             Map<String, TsType> tsArguments = new LinkedHashMap<>();
-            for (Parameter arg : method.getParameters()) {
-                tsArguments.put(arg.getName(), getTsType(arg.getType()));
+            for (Parameter param : method.getParameters()) {
+                tsArguments.put(param.getName(), getParameterType(param));
             }
-            TsType returnType = getTsType(method.getReturnType());
+            TsType returnType = getReturnType(method);
             tsFunctions.put(method.getName(), new FunctionType(returnType, tsArguments));
         }
 
@@ -101,5 +100,46 @@ public class TsGenerator {
             }
         }
         return res;
+    }
+
+    private TsType getParameterType(Parameter param) {
+        Type genericType = param.getParameterizedType();
+        if (genericType instanceof TypeVariable<?>) {
+            return new GenericType(genericType.toString());
+        } else if (genericType instanceof ParameterizedType pType) {
+            return new ParamType(getTsType((Class<?>) pType.getRawType()), getGenericTypes(pType.getActualTypeArguments()));
+        } else {
+            return getTsType(param.getType());
+        }
+    }
+
+    private TsType getReturnType(Method method) {
+        Type genericType = method.getGenericReturnType();
+        if (genericType instanceof TypeVariable<?>) {
+            return new GenericType(genericType.toString());
+        } else if (genericType instanceof ParameterizedType pType) {
+            return new ParamType(getTsType((Class<?>) pType.getRawType()), getGenericTypes(pType.getActualTypeArguments()));
+        } else {
+            return getTsType(method.getReturnType());
+        }
+    }
+
+    private List<GenericType> getGenericTypes(Type[] types) {
+        return Arrays.stream(types).map(t -> new GenericType(genericTypeToString(t))).toList();
+    }
+
+    private String genericTypeToString(Type type) {
+        if(type instanceof WildcardType wType) {
+            return Stream.of(wType.getLowerBounds(), wType.getUpperBounds())
+                    .flatMap(Arrays::stream)
+                    .map(this::genericTypeToString)
+                    .filter(s -> !s.isEmpty())
+                    .findFirst()
+                    .orElseThrow();
+        } else if (type instanceof TypeVariable<?>) {
+            return type.toString();
+        } else {
+            return "";
+        }
     }
 }

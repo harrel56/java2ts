@@ -1,6 +1,9 @@
 package org.harrel.java2ts;
 
+import java.lang.reflect.Type;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -10,12 +13,14 @@ public class ComplexType implements TsType {
     private static final String INDENTED_NEW_LINE = "\n    ";
 
     private final String name;
-    private final Set<ComplexType> superTypes;
+    private final List<GenericType> genericTypes;
+    private final List<ComplexType> superTypes;
     private final Map<String, TsType> fields;
     private final Map<String, FunctionType> methods;
 
-    public ComplexType(String name, Set<ComplexType> superTypes, Map<String, TsType> fields, Map<String, FunctionType> methods) {
+    public ComplexType(String name, List<GenericType> genericTypes, List<ComplexType> superTypes, Map<String, TsType> fields, Map<String, FunctionType> methods) {
         this.name = name;
+        this.genericTypes = genericTypes;
         this.superTypes = superTypes;
         this.fields = fields;
         this.methods = methods;
@@ -27,6 +32,13 @@ public class ComplexType implements TsType {
     }
 
     public String getTypeDeclaration() {
+        String genericTypesString = genericTypes.stream().
+                map(TsType::getTypeName)
+                .collect(Collectors.joining(", "));
+        if(!genericTypesString.isEmpty()) {
+            genericTypesString = "<" + genericTypesString + ">";
+        }
+
         String superTypesString = superTypes.stream().
                 map(TsType::getTypeName)
                 .collect(Collectors.joining(", "));
@@ -47,9 +59,9 @@ public class ComplexType implements TsType {
                 .collect(Collectors.joining(INDENTED_NEW_LINE));
 
         return """
-                declare interface %s%s {
+                declare interface %s%s%s {
                     %s
                 }"""
-                .formatted(name, superTypesString, body);
+                .formatted(name, genericTypesString, superTypesString, body);
     }
 }
