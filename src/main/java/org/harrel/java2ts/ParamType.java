@@ -6,9 +6,9 @@ import java.util.stream.Collectors;
 public class ParamType implements TsType {
 
     private final TsType rawType;
-    private final List<GenericType> genericTypes;
+    private final List<TsType> genericTypes;
 
-    public ParamType(TsType rawType, List<GenericType> genericTypes) {
+    public ParamType(TsType rawType, List<TsType> genericTypes) {
         this.rawType = rawType;
         this.genericTypes = genericTypes;
     }

@@ -1,10 +1,7 @@
 package org.harrel.java2ts;
 
-import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -14,11 +11,11 @@ public class ComplexType implements TsType {
 
     private final String name;
     private final List<GenericType> genericTypes;
-    private final List<ComplexType> superTypes;
+    private final List<TsType> superTypes;
     private final Map<String, TsType> fields;
     private final Map<String, FunctionType> methods;
 
-    public ComplexType(String name, List<GenericType> genericTypes, List<ComplexType> superTypes, Map<String, TsType> fields, Map<String, FunctionType> methods) {
+    public ComplexType(String name, List<GenericType> genericTypes, List<TsType> superTypes, Map<String, TsType> fields, Map<String, FunctionType> methods) {
         this.name = name;
         this.genericTypes = genericTypes;
         this.superTypes = superTypes;
@@ -35,14 +32,14 @@ public class ComplexType implements TsType {
         String genericTypesString = genericTypes.stream().
                 map(TsType::getTypeName)
                 .collect(Collectors.joining(", "));
-        if(!genericTypesString.isEmpty()) {
+        if (!genericTypesString.isEmpty()) {
             genericTypesString = "<" + genericTypesString + ">";
         }
 
         String superTypesString = superTypes.stream().
                 map(TsType::getTypeName)
                 .collect(Collectors.joining(", "));
-        if(!superTypesString.isEmpty()) {
+        if (!superTypesString.isEmpty()) {
             superTypesString = " extends " + superTypesString;
         }
 
@@ -59,7 +56,7 @@ public class ComplexType implements TsType {
                 .collect(Collectors.joining(INDENTED_NEW_LINE));
 
         return """
-                declare interface %s%s%s {
+                export declare interface %s%s%s {
                     %s
                 }"""
                 .formatted(name, genericTypesString, superTypesString, body);

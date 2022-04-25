@@ -11,6 +11,7 @@ public class ClassUtil {
     public static List<Field> getPublicFields(Class<?> clazz) {
         return Arrays.stream(clazz.getDeclaredFields())
                 .filter(f -> Modifier.isPublic(f.getModifiers()))
+                .filter(f -> !Modifier.isStatic(f.getModifiers()))
                 .toList();
     }
 
@@ -18,7 +19,6 @@ public class ClassUtil {
         return Arrays.stream(clazz.getDeclaredMethods())
                 .filter(m -> Modifier.isPublic(m.getModifiers()))
                 .filter(m -> !Modifier.isStatic(m.getModifiers()))
-                .filter(m -> m.getTypeParameters().length == 0)
                 .toList();
     }
 }
