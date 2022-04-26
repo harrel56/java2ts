@@ -9,7 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class TsGeneratorTest {
 
     @Test
-    void generateSimpleFields() {
+    void simpleFields() {
         class Simple {
             public int x;
             public long y;
@@ -26,7 +26,7 @@ class TsGeneratorTest {
     }
 
     @Test
-    void generateNullableSimpleFields() {
+    void nullableSimpleFields() {
         class Simple {
             public Integer x;
             public BigDecimal y;
@@ -43,7 +43,7 @@ class TsGeneratorTest {
     }
 
     @Test
-    void generateArrayFields() {
+    void arrayFields() {
         class Simple {
             public int[] x;
             public BigDecimal[] y;
@@ -60,7 +60,7 @@ class TsGeneratorTest {
     }
 
     @Test
-    void generateMethods() {
+    void methods() {
         interface Simple {
             int[] m1();
 
