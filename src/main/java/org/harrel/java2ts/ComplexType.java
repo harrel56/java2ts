@@ -10,12 +10,12 @@ public class ComplexType implements TsType {
     private static final String INDENTED_NEW_LINE = "\n    ";
 
     private final String name;
-    private final List<GenericType> genericTypes;
+    private final List<TsType> genericTypes;
     private final List<TsType> superTypes;
     private final Map<String, TsType> fields;
-    private final Map<String, FunctionType> methods;
+    private final Map<String, TsType> methods;
 
-    public ComplexType(String name, List<GenericType> genericTypes, List<TsType> superTypes, Map<String, TsType> fields, Map<String, FunctionType> methods) {
+    public ComplexType(String name, List<TsType> genericTypes, List<TsType> superTypes, Map<String, TsType> fields, Map<String, TsType> methods) {
         this.name = name;
         this.genericTypes = genericTypes;
         this.superTypes = superTypes;
@@ -29,8 +29,9 @@ public class ComplexType implements TsType {
     }
 
     public String getTypeDeclaration() {
-        String genericTypesString = genericTypes.stream().
-                map(TsType::getTypeName)
+        String genericTypesString = genericTypes.stream()
+                .map(GenericType.class::cast)
+                .map(GenericType::getBoundedTypeName)
                 .collect(Collectors.joining(", "));
         if (!genericTypesString.isEmpty()) {
             genericTypesString = "<" + genericTypesString + ">";

@@ -28,6 +28,7 @@ class MainTest {
         System.out.println(gen.getAllDeclarations());
     }
 
+interface Gen4<T extends Gen4<? super T>> {}
 
     interface Gen<T extends String, V, Y> {
         T genM(Gen2<T> t);

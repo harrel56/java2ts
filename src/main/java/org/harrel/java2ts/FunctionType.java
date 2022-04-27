@@ -7,11 +7,11 @@ import java.util.stream.Collectors;
 public class FunctionType implements TsType {
 
     private final TsType returnType;
-    private final List<GenericType> genericTypes;
+    private final List<TsType> genericTypes;
 
     private final Map<String, TsType> arguments;
 
-    public FunctionType(TsType returnType, List<GenericType> genericTypes, Map<String, TsType> arguments) {
+    public FunctionType(TsType returnType, List<TsType> genericTypes, Map<String, TsType> arguments) {
         this.returnType = returnType;
         this.genericTypes = genericTypes;
         this.arguments = arguments;
@@ -19,8 +19,9 @@ public class FunctionType implements TsType {
 
     @Override
     public String getTypeName() {
-        String genericTypesString = genericTypes.stream().
-                map(TsType::getTypeName)
+        String genericTypesString = genericTypes.stream()
+                .map(GenericType.class::cast)
+                .map(GenericType::getBoundedTypeName)
                 .collect(Collectors.joining(", "));
         if(!genericTypesString.isEmpty()) {
             genericTypesString = "<" + genericTypesString + ">";

@@ -8,11 +8,13 @@ import java.util.stream.Stream;
 public class TsGenerator {
 
     private final Set<Type> unsupportedTypes = Set.of(Object.class, Class.class);
-    private final Map<Class<?>, ComplexType> typeCache = new LinkedHashMap<>();
+    private final Map<Class<?>, ComplexType> typesCache = new LinkedHashMap<>();
+    private final Map<TypeVariable<?>, GenericType> genericsCache = new HashMap<>();
+
 
     public String getAllDeclarations() {
-        System.out.println(typeCache.size());
-        return typeCache.values().stream()
+        System.out.println(typesCache.size());
+        return typesCache.values().stream()
                 .map(ComplexType::getTypeDeclaration)
                 .collect(Collectors.joining(System.lineSeparator()));
     }
@@ -35,13 +37,24 @@ public class TsGenerator {
                             .map(this::resolveType)
                             .findFirst()
                             .orElseThrow();
-            case TypeVariable<?> type -> new GenericType(type.toString());
             case ParameterizedType type && unsupportedTypes.contains(type.getRawType()) -> SimpleType.ANY;
             case ParameterizedType type -> new ParamType(resolveType(type.getRawType()), resolveTypes(type.getActualTypeArguments()));
             case GenericArrayType type -> new ArrayType(resolveType(type.getGenericComponentType()));
+            case TypeVariable<?> type -> resolveGenericType(type);
             case Class<?> type -> resolveClassType(type);
             default -> throw new IllegalStateException();
         };
+    }
+
+    private GenericType resolveGenericType(TypeVariable<?> type) {
+        if(genericsCache.containsKey(type)) {
+            return genericsCache.get(type);
+        }
+        List<TsType> tsBounds = new ArrayList<>(1);
+        GenericType genericType = new GenericType(type.toString(), tsBounds);
+        genericsCache.put(type, genericType);
+        tsBounds.addAll(resolveTypes(getGenericBounds(type.getBounds())));
+        return genericType;
     }
 
     private TsType resolveClassType(Class<?> clazz) {
@@ -65,17 +78,18 @@ public class TsGenerator {
     }
 
     private ComplexType resolveComplexType(Class<?> clazz) {
-        if (typeCache.containsKey(clazz)) {
-            return typeCache.get(clazz);
+        if (typesCache.containsKey(clazz)) {
+            return typesCache.get(clazz);
         }
 
-        List<GenericType> tsGenericTypes = toGenericTypes(clazz.getTypeParameters());
+        List<TsType> tsGenericTypes = new ArrayList<>();
         List<TsType> tsSuperTypes = new ArrayList<>();
         Map<String, TsType> tsFields = new LinkedHashMap<>();
-        Map<String, FunctionType> tsFunctions = new LinkedHashMap<>();
+        Map<String, TsType> tsFunctions = new LinkedHashMap<>();
         ComplexType complexType = new ComplexType(getClassName(clazz), tsGenericTypes, tsSuperTypes, tsFields, tsFunctions);
-        typeCache.put(clazz, complexType);
+        typesCache.put(clazz, complexType);
 
+        tsGenericTypes.addAll(resolveTypes(clazz.getTypeParameters()));
         for (Type superType : getSuperTypes(clazz)) {
             tsSuperTypes.add(resolveType(superType));
         }
@@ -90,7 +104,7 @@ public class TsGenerator {
                 tsArguments.put(param.getName(), resolveType(param.getParameterizedType()));
             }
             TsType returnType = resolveType(method.getGenericReturnType());
-            List<GenericType> tsMethodGenericTypes = toGenericTypes(method.getTypeParameters());
+            List<TsType> tsMethodGenericTypes = resolveTypes(method.getTypeParameters());
             tsFunctions.put(method.getName(), new FunctionType(returnType, tsMethodGenericTypes, tsArguments));
         }
 
@@ -99,7 +113,7 @@ public class TsGenerator {
 
     private String getClassName(Class<?> clazz) {
         if (clazz.getPackageName().startsWith("java.")) {
-            return "J_" + clazz.getSimpleName();
+            return "J" + clazz.getSimpleName();
         }
         return clazz.getSimpleName();
     }
@@ -117,10 +131,9 @@ public class TsGenerator {
         return res;
     }
 
-    private List<GenericType> toGenericTypes(Type[] types) {
-        return Arrays.stream(types)
-                .map(Objects::toString)
-                .map(GenericType::new)
-                .toList();
+    private Type[] getGenericBounds(Type[] bounds) {
+        return Arrays.stream(bounds)
+                .filter(b -> b != Object.class)
+                .toArray(Type[]::new);
     }
 }
