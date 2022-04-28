@@ -12,6 +12,7 @@ public class TsGenerator {
     private final Map<Class<?>, ComplexType> typesCache = new LinkedHashMap<>();
     private final Map<TypeVariable<?>, GenericType> genericsCache = new HashMap<>();
 
+    private boolean sortingEnabled = true;
     private Function<Class<?>, String> nameResolver = clazz -> {
         if (clazz.getPackageName().startsWith("java.")) {
             return "J" + clazz.getSimpleName();
@@ -27,6 +28,10 @@ public class TsGenerator {
 
     public void registerType(Class<?> clazz) {
         resolveClassType(clazz);
+    }
+
+    public void setSortingEnabled(boolean sortingEnabled) {
+        this.sortingEnabled = sortingEnabled;
     }
 
     public void setNameResolver(Function<Class<?>, String> resolver) {
@@ -99,8 +104,8 @@ public class TsGenerator {
 
         List<TsType> tsGenericTypes = new ArrayList<>();
         List<TsType> tsSuperTypes = new ArrayList<>();
-        Map<String, TsType> tsFields = new LinkedHashMap<>();
-        Map<String, TsType> tsFunctions = new LinkedHashMap<>();
+        List<NamedProperty> tsFields = new ArrayList<>();
+        List<NamedProperty> tsFunctions = new ArrayList<>();
         ComplexType complexType = new ComplexType(nameResolver.apply(clazz), tsGenericTypes, tsSuperTypes, tsFields, tsFunctions);
         typesCache.put(clazz, complexType);
 
@@ -110,17 +115,22 @@ public class TsGenerator {
         }
 
         for (Field field : ClassUtil.getPublicFields(clazz)) {
-            tsFields.put(field.getName(), resolveType(field.getGenericType()));
+            tsFields.add(new NamedProperty(field.getName(), resolveType(field.getGenericType())));
         }
 
         for (Method method : ClassUtil.getPublicMethods(clazz)) {
-            Map<String, TsType> tsArguments = new LinkedHashMap<>();
+            List<NamedProperty> tsArguments = new ArrayList<>();
             for (Parameter param : method.getParameters()) {
-                tsArguments.put(param.getName(), resolveType(param.getParameterizedType()));
+                tsArguments.add(new NamedProperty(param.getName(), resolveType(param.getParameterizedType())));
             }
             TsType returnType = resolveType(method.getGenericReturnType());
             List<TsType> tsMethodGenericTypes = resolveTypes(method.getTypeParameters());
-            tsFunctions.put(method.getName(), new FunctionType(returnType, tsMethodGenericTypes, tsArguments));
+            tsFunctions.add(new NamedProperty(method.getName(), new FunctionType(returnType, tsMethodGenericTypes, tsArguments)));
+        }
+
+        if (sortingEnabled) {
+            Collections.sort(tsFields);
+            Collections.sort(tsFunctions);
         }
 
         return complexType;

@@ -16,7 +16,7 @@ class GenericWildcardsTest {
         gen.registerType(Simple.class);
         String out = gen.getAllDeclarations();
         assertTrue(out.contains("t: Simple<any> | null\n"), out);
-        assertTrue(out.contains("m: (t: Simple<any> | null) => Simple<any> | null\n"), out);
+        assertTrue(out.contains("m(t: Simple<any> | null): Simple<any> | null\n"), out);
     }
 
     @Test
@@ -29,7 +29,7 @@ class GenericWildcardsTest {
         gen.registerType(Simple.class);
         String out = gen.getAllDeclarations();
         assertTrue(out.contains("t: Simple<string> | null\n"), out);
-        assertTrue(out.contains("m: (t: Simple<any> | null) => Simple<number> | null\n"), out);
+        assertTrue(out.contains("m(t: Simple<any> | null): Simple<number> | null\n"), out);
     }
 
     @Test
@@ -42,7 +42,7 @@ class GenericWildcardsTest {
         gen.registerType(Simple.class);
         String out = gen.getAllDeclarations();
         assertTrue(out.contains("t: Simple<string> | null\n"), out);
-        assertTrue(out.contains("m: (t: Simple<any> | null) => Simple<number> | null\n"), out);
+        assertTrue(out.contains("m(t: Simple<any> | null): Simple<number> | null\n"), out);
     }
 
     @Test
@@ -55,7 +55,7 @@ class GenericWildcardsTest {
         gen.registerType(Simple.class);
         String out = gen.getAllDeclarations();
         assertTrue(out.contains("t: Simple<Simple<any>> | null\n"), out);
-        assertTrue(out.contains("m: (t: Simple<Simple<Simple<any>>> | null) => Simple<Simple<any>> | null\n"), out);
+        assertTrue(out.contains("m(t: Simple<Simple<Simple<any>>> | null): Simple<Simple<any>> | null\n"), out);
     }
 
     @Test
@@ -70,6 +70,6 @@ class GenericWildcardsTest {
         String out = gen.getAllDeclarations();
         assertTrue(out.contains("x: Simple<any, Simple<any, Simple<any, any>>> | null\n"), out);
         assertTrue(out.contains("t: Simple<string, number> | null\n"), out);
-        assertTrue(out.contains("m: (t: Simple<any, any> | null) => Simple<number, Simple<any, string>> | null\n"), out);
+        assertTrue(out.contains("m(t: Simple<any, any> | null): Simple<number, Simple<any, string>> | null\n"), out);
     }
 }

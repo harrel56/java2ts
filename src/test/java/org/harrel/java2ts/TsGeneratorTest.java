@@ -73,9 +73,26 @@ class TsGeneratorTest {
         TsGenerator gen = new TsGenerator();
         gen.registerType(Simple.class);
         String out = gen.getAllDeclarations();
-        assertTrue(out.contains("m1: () => number[] | null\n"));
-        assertTrue(out.contains("m2: (a1: number) => number\n"));
-        assertTrue(out.contains("m3: (a1: string | null, a2: string | null) => string | null\n"));
-        assertTrue(out.contains("m4: (a1: any) => void\n"));
+        assertTrue(out.contains("m1(): number[] | null\n"));
+        assertTrue(out.contains("m2(a1: number): number\n"));
+        assertTrue(out.contains("m3(a1: string | null, a2: string | null): string | null\n"));
+        assertTrue(out.contains("m4(a1: any): void\n"));
+    }
+
+    @Test
+    void methodsOverloaded() {
+        interface Simple {
+            int m1();
+            int m1(int i);
+            int m1(String s);
+            int m1(int x, long... l);
+        }
+        TsGenerator gen = new TsGenerator();
+        gen.registerType(Simple.class);
+        String out = gen.getAllDeclarations();
+        assertTrue(out.contains("m1(): number\n"), out);
+        assertTrue(out.contains("m1(s: string | null): number\n"), out);
+        assertTrue(out.contains("m1(i: number): number\n"), out);
+        assertTrue(out.contains("m1(x: number, l: number[] | null): number\n"), out);
     }
 }

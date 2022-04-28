@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import java.io.Serializable;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -24,7 +25,7 @@ class MainTest {
     @Test
     void main() {
         TsGenerator gen = new TsGenerator();
-        gen.registerType(List.class);
+        gen.registerType(Optional.class);
         System.out.println(gen.getAllDeclarations());
     }
 

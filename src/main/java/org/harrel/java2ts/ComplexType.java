@@ -1,7 +1,6 @@
 package org.harrel.java2ts;
 
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -12,10 +11,10 @@ public class ComplexType implements TsType {
     private final String name;
     private final List<TsType> genericTypes;
     private final List<TsType> superTypes;
-    private final Map<String, TsType> fields;
-    private final Map<String, TsType> methods;
+    private final List<NamedProperty> fields;
+    private final List<NamedProperty> methods;
 
-    public ComplexType(String name, List<TsType> genericTypes, List<TsType> superTypes, Map<String, TsType> fields, Map<String, TsType> methods) {
+    public ComplexType(String name, List<TsType> genericTypes, List<TsType> superTypes, List<NamedProperty> fields, List<NamedProperty> methods) {
         this.name = name;
         this.genericTypes = genericTypes;
         this.superTypes = superTypes;
@@ -44,12 +43,12 @@ public class ComplexType implements TsType {
             superTypesString = " extends " + superTypesString;
         }
 
-        String fieldsString = fields.entrySet().stream()
-                .map(entry -> entry.getKey() + ": " + entry.getValue().getNullableTypeName())
+        String fieldsString = fields.stream()
+                .map(Object::toString)
                 .collect(Collectors.joining(INDENTED_NEW_LINE));
 
-        String methodsString = methods.entrySet().stream()
-                .map(entry -> entry.getKey() + ": " + entry.getValue().getTypeName())
+        String methodsString = methods.stream()
+                .map(Object::toString)
                 .collect(Collectors.joining(INDENTED_NEW_LINE));
 
         String body = Stream.of(fieldsString, methodsString)

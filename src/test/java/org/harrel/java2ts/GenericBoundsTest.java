@@ -44,7 +44,7 @@ class GenericBoundsTest {
         TsGenerator gen = new TsGenerator();
         gen.registerType(Simple.class);
         String out = gen.getAllDeclarations();
-        assertTrue(out.contains("t: <T extends number>(t: T | null) => T | null\n"), out);
+        assertTrue(out.contains("t<T extends number>(t: T | null): T | null\n"), out);
     }
 
     @Test
@@ -55,7 +55,7 @@ class GenericBoundsTest {
         TsGenerator gen = new TsGenerator();
         gen.registerType(Simple.class);
         String out = gen.getAllDeclarations();
-        assertTrue(out.contains("t: <T extends number, Y extends string, U>(t: U | null) => Y | null\n"), out);
+        assertTrue(out.contains("t<T extends number, Y extends string, U>(t: U | null): Y | null\n"), out);
     }
 
     @Test
@@ -66,7 +66,7 @@ class GenericBoundsTest {
         TsGenerator gen = new TsGenerator();
         gen.registerType(Simple.class);
         String out = gen.getAllDeclarations();
-        assertTrue(out.contains("t: <T extends Simple<Simple<T>>>(t: T | null) => T | null\n"), out);
+        assertTrue(out.contains("t<T extends Simple<Simple<T>>>(t: T | null): T | null\n"), out);
     }
 
     @Test
@@ -78,7 +78,7 @@ class GenericBoundsTest {
         TsGenerator gen = new TsGenerator();
         gen.registerType(Simple.class);
         String out = gen.getAllDeclarations();
-        assertTrue(out.contains("t: <T extends Simple<Simple<T>>>(t: T | null) => T | null\n"), out);
-        assertTrue(out.contains("y: <T extends Simple<Simple<T>>>(t: T | null) => T | null\n"), out);
+        assertTrue(out.contains("t<T extends Simple<Simple<T>>>(t: T | null): T | null\n"), out);
+        assertTrue(out.contains("y<T extends Simple<Simple<T>>>(t: T | null): T | null\n"), out);
     }
 }

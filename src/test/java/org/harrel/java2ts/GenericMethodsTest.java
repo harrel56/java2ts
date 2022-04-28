@@ -16,9 +16,9 @@ class GenericMethodsTest {
         TsGenerator gen = new TsGenerator();
         gen.registerType(Simple.class);
         String out = gen.getAllDeclarations();
-        assertTrue(out.contains("t: (t: T | null) => T | null\n"), out);
-        assertTrue(out.contains("y: (t: T | null) => void\n"), out);
-        assertTrue(out.contains("u: () => T | null\n"), out);
+        assertTrue(out.contains("t(t: T | null): T | null\n"), out);
+        assertTrue(out.contains("y(t: T | null): void\n"), out);
+        assertTrue(out.contains("u(): T | null\n"), out);
     }
 
     @Test
@@ -31,9 +31,9 @@ class GenericMethodsTest {
         TsGenerator gen = new TsGenerator();
         gen.registerType(Simple.class);
         String out = gen.getAllDeclarations();
-        assertTrue(out.contains("t: (t: Y | null) => T | null\n"), out);
-        assertTrue(out.contains("y: (t: U | null) => Y | null\n"), out);
-        assertTrue(out.contains("u: (t: T | null) => U | null\n"), out);
+        assertTrue(out.contains("t(t: Y | null): T | null\n"), out);
+        assertTrue(out.contains("y(t: U | null): Y | null\n"), out);
+        assertTrue(out.contains("u(t: T | null): U | null\n"), out);
     }
 
     @Test
@@ -44,7 +44,7 @@ class GenericMethodsTest {
         TsGenerator gen = new TsGenerator();
         gen.registerType(Simple.class);
         String out = gen.getAllDeclarations();
-        assertTrue(out.contains("t: (t: T[] | null) => T[] | null\n"), out);
+        assertTrue(out.contains("t(t: T[] | null): T[] | null\n"), out);
     }
 
     @Test
@@ -57,9 +57,9 @@ class GenericMethodsTest {
         TsGenerator gen = new TsGenerator();
         gen.registerType(Simple.class);
         String out = gen.getAllDeclarations();
-        assertTrue(out.contains("t: (t: Y[][][] | null) => T[] | null\n"), out);
-        assertTrue(out.contains("y: (t: U[][] | null) => Y[][] | null\n"), out);
-        assertTrue(out.contains("u: (t: T[] | null) => U[][][] | null\n"), out);
+        assertTrue(out.contains("t(t: Y[][][] | null): T[] | null\n"), out);
+        assertTrue(out.contains("y(t: U[][] | null): Y[][] | null\n"), out);
+        assertTrue(out.contains("u(t: T[] | null): U[][][] | null\n"), out);
     }
 
     @Test
@@ -70,7 +70,7 @@ class GenericMethodsTest {
         TsGenerator gen = new TsGenerator();
         gen.registerType(Simple.class);
         String out = gen.getAllDeclarations();
-        assertTrue(out.contains("t: (t: Simple<T> | null) => Simple<T> | null\n"), out);
+        assertTrue(out.contains("t(t: Simple<T> | null): Simple<T> | null\n"), out);
     }
 
     @Test
@@ -83,9 +83,9 @@ class GenericMethodsTest {
         TsGenerator gen = new TsGenerator();
         gen.registerType(Simple.class);
         String out = gen.getAllDeclarations();
-        assertTrue(out.contains("t: (t: Simple<Y, T, U> | null) => Simple<T, Y, U> | null\n"), out);
-        assertTrue(out.contains("y: (t: Simple<U, U, U> | null) => Simple<Y, U, T> | null\n"), out);
-        assertTrue(out.contains("u: (t: Simple<T, Y, Y> | null) => Simple<U, T, T> | null\n"), out);
+        assertTrue(out.contains("t(t: Simple<Y, T, U> | null): Simple<T, Y, U> | null\n"), out);
+        assertTrue(out.contains("y(t: Simple<U, U, U> | null): Simple<Y, U, T> | null\n"), out);
+        assertTrue(out.contains("u(t: Simple<T, Y, Y> | null): Simple<U, T, T> | null\n"), out);
     }
 
     @Test
@@ -96,7 +96,7 @@ class GenericMethodsTest {
         TsGenerator gen = new TsGenerator();
         gen.registerType(Simple.class);
         String out = gen.getAllDeclarations();
-        assertTrue(out.contains("t: (t: Simple<Simple<T>> | null) => Simple<Simple<Simple<Simple<T>>>> | null\n"), out);
+        assertTrue(out.contains("t(t: Simple<Simple<T>> | null): Simple<Simple<Simple<Simple<T>>>> | null\n"), out);
     }
 
     @Test
@@ -107,7 +107,7 @@ class GenericMethodsTest {
         TsGenerator gen = new TsGenerator();
         gen.registerType(Simple.class);
         String out = gen.getAllDeclarations();
-        assertTrue(out.contains("t: (t: Simple<Simple<Y, Y>, Simple<T, T>> | null) => Simple<Y, Simple<Y, Simple<T, T>>> | null\n"), out);
+        assertTrue(out.contains("t(t: Simple<Simple<Y, Y>, Simple<T, T>> | null): Simple<Y, Simple<Y, Simple<T, T>>> | null\n"), out);
     }
 
     @Test
@@ -118,7 +118,7 @@ class GenericMethodsTest {
         TsGenerator gen = new TsGenerator();
         gen.registerType(Simple.class);
         String out = gen.getAllDeclarations();
-        assertTrue(out.contains("t: <T>(t: T | null) => T | null\n"), out);
+        assertTrue(out.contains("t<T>(t: T | null): T | null\n"), out);
     }
 
     @Test
@@ -129,7 +129,7 @@ class GenericMethodsTest {
         TsGenerator gen = new TsGenerator();
         gen.registerType(Simple.class);
         String out = gen.getAllDeclarations();
-        assertTrue(out.contains("t: <T, Y, U>(t: T | null, y: Y | null, u: U | null) => T | null\n"), out);
+        assertTrue(out.contains("t<T, Y, U>(t: T | null, y: Y | null, u: U | null): T | null\n"), out);
     }
 
     @Test
@@ -140,6 +140,6 @@ class GenericMethodsTest {
         TsGenerator gen = new TsGenerator();
         gen.registerType(Simple.class);
         String out = gen.getAllDeclarations();
-        assertTrue(out.contains("t: <T>(t: Simple<S> | null) => Simple<T> | null\n"), out);
+        assertTrue(out.contains("t<T>(t: Simple<S> | null): Simple<T> | null\n"), out);
     }
 }
