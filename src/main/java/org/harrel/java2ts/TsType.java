@@ -8,5 +8,4 @@ public interface TsType {
 
     String getTypeName();
 
-
 }

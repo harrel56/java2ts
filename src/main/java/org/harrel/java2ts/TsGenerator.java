@@ -2,6 +2,7 @@ package org.harrel.java2ts;
 
 import java.lang.reflect.*;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -11,9 +12,14 @@ public class TsGenerator {
     private final Map<Class<?>, ComplexType> typesCache = new LinkedHashMap<>();
     private final Map<TypeVariable<?>, GenericType> genericsCache = new HashMap<>();
 
+    private Function<Class<?>, String> nameResolver = clazz -> {
+        if (clazz.getPackageName().startsWith("java.")) {
+            return "J" + clazz.getSimpleName();
+        }
+        return clazz.getSimpleName();
+    };
 
     public String getAllDeclarations() {
-        System.out.println(typesCache.size());
         return typesCache.values().stream()
                 .map(ComplexType::getTypeDeclaration)
                 .collect(Collectors.joining(System.lineSeparator()));
@@ -21,6 +27,11 @@ public class TsGenerator {
 
     public void registerType(Class<?> clazz) {
         resolveClassType(clazz);
+    }
+
+    public void setNameResolver(Function<Class<?>, String> resolver) {
+        Objects.requireNonNull(resolver);
+        this.nameResolver = resolver;
     }
 
     private List<TsType> resolveTypes(Type[] types) {
@@ -31,23 +42,27 @@ public class TsGenerator {
 
     private TsType resolveType(Type mainType) {
         return switch (mainType) {
-            case WildcardType type ->
-                    Stream.of(type.getLowerBounds(), type.getUpperBounds())
-                            .flatMap(Arrays::stream)
-                            .map(this::resolveType)
-                            .findFirst()
-                            .orElseThrow();
             case ParameterizedType type && unsupportedTypes.contains(type.getRawType()) -> SimpleType.ANY;
-            case ParameterizedType type -> new ParamType(resolveType(type.getRawType()), resolveTypes(type.getActualTypeArguments()));
+            case ParameterizedType type ->
+                    new ParamType(resolveType(type.getRawType()), resolveTypes(type.getActualTypeArguments()));
             case GenericArrayType type -> new ArrayType(resolveType(type.getGenericComponentType()));
+            case WildcardType type -> resolveWildcardType(type);
             case TypeVariable<?> type -> resolveGenericType(type);
             case Class<?> type -> resolveClassType(type);
             default -> throw new IllegalStateException();
         };
     }
 
+    private TsType resolveWildcardType(WildcardType type) {
+        return Stream.of(type.getLowerBounds(), type.getUpperBounds())
+                .flatMap(Arrays::stream)
+                .map(this::resolveType)
+                .findFirst()
+                .orElseThrow();
+    }
+
     private GenericType resolveGenericType(TypeVariable<?> type) {
-        if(genericsCache.containsKey(type)) {
+        if (genericsCache.containsKey(type)) {
             return genericsCache.get(type);
         }
         List<TsType> tsBounds = new ArrayList<>(1);
@@ -86,7 +101,7 @@ public class TsGenerator {
         List<TsType> tsSuperTypes = new ArrayList<>();
         Map<String, TsType> tsFields = new LinkedHashMap<>();
         Map<String, TsType> tsFunctions = new LinkedHashMap<>();
-        ComplexType complexType = new ComplexType(getClassName(clazz), tsGenericTypes, tsSuperTypes, tsFields, tsFunctions);
+        ComplexType complexType = new ComplexType(nameResolver.apply(clazz), tsGenericTypes, tsSuperTypes, tsFields, tsFunctions);
         typesCache.put(clazz, complexType);
 
         tsGenericTypes.addAll(resolveTypes(clazz.getTypeParameters()));
@@ -109,13 +124,6 @@ public class TsGenerator {
         }
 
         return complexType;
-    }
-
-    private String getClassName(Class<?> clazz) {
-        if (clazz.getPackageName().startsWith("java.")) {
-            return "J" + clazz.getSimpleName();
-        }
-        return clazz.getSimpleName();
     }
 
     private List<Type> getSuperTypes(Class<?> clazz) {
