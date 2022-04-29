@@ -1,14 +1,8 @@
 package org.harrel.java2ts;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.Serializable;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
-import java.util.function.Consumer;
-import java.util.function.Function;
 
 class MainTest {
 //    public Integer integerField;
@@ -25,8 +19,16 @@ class MainTest {
     @Test
     void main() {
         TsGenerator gen = new TsGenerator();
-        gen.registerType(Optional.class);
+        gen.registerType(Ov2.class);
         System.out.println(gen.getAllDeclarations());
+    }
+
+    interface Ov {
+        Ov m();
+    }
+
+    interface Ov2 extends Ov {
+        Ov2 m();
     }
 
 interface Gen4<T extends Gen4<? super T>> {}

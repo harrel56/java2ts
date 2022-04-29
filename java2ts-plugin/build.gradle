@@ -1,0 +1,32 @@
+plugins {
+    id 'java'
+}
+
+group 'org.harrel'
+version '0.1'
+
+repositories {
+    mavenCentral()
+}
+
+java {
+    sourceCompatibility(JavaVersion.VERSION_18)
+}
+
+dependencies {
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+}
+
+compileJava {
+    options.compilerArgs.add('--enable-preview')
+}
+
+compileTestJava {
+    options.compilerArgs.add('--enable-preview')
+}
+
+test {
+    useJUnitPlatform()
+    jvmArgs(['--enable-preview'])
+}
