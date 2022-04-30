@@ -1,3 +1,9 @@
+pluginManagement {
+    repositories {
+        mavenLocal()
+    }
+}
+
 rootProject.name = 'java2ts'
 include 'java2ts-core'
 include 'java2ts-plugin'

@@ -1,0 +1,17 @@
+plugins {
+    id 'java'
+    id 'org.harrel.java2ts' version '0.1'
+}
+
+java {
+    sourceCompatibility(JavaVersion.VERSION_18)
+}
+
+compileJava {
+    options.compilerArgs.add('--enable-preview')
+}
+
+generateTsDeclarations {
+    sourceSet = project.sourceSets.getByName('main')
+    types = ['org.testing.Sample']
+}

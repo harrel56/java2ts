@@ -1,5 +1,7 @@
 plugins {
     id 'java'
+    id 'java-gradle-plugin'
+    id 'maven-publish'
 }
 
 group 'org.harrel'
@@ -14,6 +16,10 @@ java {
 }
 
 dependencies {
+    implementation project(':java2ts-core')
+    implementation gradleApi()
+
+    testImplementation gradleTestKit()
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
 }
@@ -29,4 +35,13 @@ compileTestJava {
 test {
     useJUnitPlatform()
     jvmArgs(['--enable-preview'])
+}
+
+gradlePlugin {
+    plugins {
+        java2ts {
+            id = 'org.harrel.java2ts'
+            implementationClass = 'org.harrel.java2ts.JavaToTsPlugin'
+        }
+    }
 }
