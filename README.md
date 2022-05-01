@@ -1,4 +1,4 @@
-![pipeline status](https://gitlab.com/org.harrel/java2ts/badges/master/pipeline.svg)
+[![pipeline status](https://gitlab.com/org.harrel/java2ts/badges/master/pipeline.svg)](https://gitlab.com/org.harrel/java2ts/-/commits/master)
 # Java2ts
 
 Lightweight library (with gradle plugin) which generates typescript types definitions from java classes. Supports:
