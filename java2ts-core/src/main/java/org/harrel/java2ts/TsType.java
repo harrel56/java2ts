@@ -1,6 +1,6 @@
 package org.harrel.java2ts;
 
-public interface TsType {
+interface TsType {
 
     default String getNullableTypeName() {
         return getTypeName() + " | null";

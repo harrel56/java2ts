@@ -2,7 +2,7 @@ package org.harrel.java2ts;
 
 import java.util.List;
 
-public class GenericType implements TsType {
+class GenericType implements TsType {
 
     private final String name;
     private final List<TsType> bound;

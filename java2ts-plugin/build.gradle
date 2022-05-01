@@ -34,7 +34,6 @@ compileTestJava {
 
 test {
     useJUnitPlatform()
-    jvmArgs(['--enable-preview'])
 }
 
 gradlePlugin {

@@ -5,7 +5,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
-public enum SimpleType implements TsType {
+enum SimpleType implements TsType {
     STRING("string"),
     NUMBER("number"),
     BOOLEAN("boolean"),

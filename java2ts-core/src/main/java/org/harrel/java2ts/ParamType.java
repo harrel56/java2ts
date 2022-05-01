@@ -3,7 +3,7 @@ package org.harrel.java2ts;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class ParamType implements TsType {
+class ParamType implements TsType {
 
     private final TsType rawType;
     private final List<TsType> genericTypes;

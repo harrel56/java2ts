@@ -3,7 +3,7 @@ package org.harrel.java2ts;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class FunctionType implements TsType {
+class FunctionType implements TsType {
 
     private final TsType returnType;
     private final List<TsType> genericTypes;

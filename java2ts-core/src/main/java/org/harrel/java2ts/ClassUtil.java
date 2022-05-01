@@ -6,7 +6,7 @@ import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.List;
 
-public class ClassUtil {
+class ClassUtil {
 
     public static List<Field> getPublicFields(Class<?> clazz) {
         return Arrays.stream(clazz.getDeclaredFields())

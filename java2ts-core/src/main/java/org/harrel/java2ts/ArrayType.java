@@ -1,6 +1,6 @@
 package org.harrel.java2ts;
 
-public class ArrayType implements TsType {
+class ArrayType implements TsType {
 
     private final TsType elementType;
 

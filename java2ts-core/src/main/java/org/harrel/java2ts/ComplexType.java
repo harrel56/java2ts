@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class ComplexType implements TsType {
+class ComplexType implements TsType {
 
     private static final String INDENTED_NEW_LINE = "\n    ";
 
