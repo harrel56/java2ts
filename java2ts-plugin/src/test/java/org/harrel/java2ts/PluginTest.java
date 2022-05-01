@@ -2,48 +2,25 @@ package org.harrel.java2ts;
 
 import org.gradle.testkit.runner.BuildResult;
 import org.gradle.testkit.runner.GradleRunner;
-import org.junit.jupiter.api.BeforeEach;
+import org.gradle.testkit.runner.UnexpectedBuildFailure;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
 
 import java.io.IOException;
-import java.io.UncheckedIOException;
-import java.net.URL;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Objects;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-class PluginTest {
-
-    @TempDir
-    private Path testProjectDir;
-    private Path buildFile;
-
-    @BeforeEach
-    void setup() throws Exception {
-        ClassLoader cl = getClass().getClassLoader();
-        URL templateUrl = cl.getResource("buildTemplate.gradle");
-        Objects.requireNonNull(templateUrl);
-        Path resourceDir = Path.of(templateUrl.toURI()).getParent();
-        copyDir(resourceDir, testProjectDir);
-
-        Path propertiesFile = testProjectDir.resolve("gradle.properties");
-        writeFile(propertiesFile, "org.gradle.jvmargs =--enable-preview");
-        Path settingsFile = testProjectDir.resolve("settings.gradle");
-        writeFile(settingsFile, "rootProject.name = 'plugin-test'");
-        buildFile = testProjectDir.resolve("build.gradle");
-        try (var in = templateUrl.openStream()) {
-            in.transferTo(Files.newOutputStream(buildFile));
-        }
-
-    }
+class PluginTest extends PluginTestBase {
 
     @Test
-    void createsOutputFile() throws IOException {
+    void createDefaultOutputFile() throws IOException {
+        String ext = """
+                generateTsDeclarations {
+                    sourceSet = project.sourceSets.getByName('main')
+                    types = ['org.testing.Sample']
+                }""";
+        appendFile(buildFile, ext);
+
         BuildResult result = GradleRunner.create()
                 .withProjectDir(testProjectDir.toFile())
                 .withPluginClasspath()
@@ -53,36 +30,176 @@ class PluginTest {
         System.out.println(result.getOutput());
         Path out = testProjectDir.resolve(Path.of("build", "generated", "java2ts", "types.d.ts"));
 
-        assertTrue(Files.exists(out));
-        try (var reader = Files.newBufferedReader(out)) {
-            long match = reader.lines()
-                    .filter(l -> l.contains("export declare interface Sample {"))
-                    .count();
-            assertEquals(1L, match);
-        }
+        assertFileContains(out, "export declare interface Sample {");
     }
 
-    private void writeFile(Path dest, String content) throws IOException {
-        try (var out = Files.newBufferedWriter(dest)) {
-            out.write(content);
-        }
+    @Test
+    void createCustomOutputFile() throws IOException {
+        String ext = """
+                generateTsDeclarations {
+                    sourceSet = project.sourceSets.getByName('main')
+                    types = ['org.testing.Sample']
+                    output = project.layout.projectDirectory.file("custom")
+                }""";
+        appendFile(buildFile, ext);
+
+        BuildResult result = GradleRunner.create()
+                .withProjectDir(testProjectDir.toFile())
+                .withPluginClasspath()
+                .withArguments("generateTsDeclarations")
+                .build();
+
+        System.out.println(result.getOutput());
+        Path out = testProjectDir.resolve(Path.of("custom"));
+
+        assertFileContains(out, "export declare interface Sample {");
     }
 
-    private void copyDir(Path sourceDir, Path destDir) throws IOException {
-        String src = sourceDir.toString();
-        String dest = destDir.toString();
-        try (var pathStream = Files.walk(sourceDir)) {
-            pathStream
-                    .filter(p -> p != sourceDir)
-                    .filter(p -> !p.toString().endsWith(".gradle"))
-                    .forEach(path -> {
-                        Path destPath = Paths.get(dest, path.toString().substring(src.length()));
-                        try {
-                            Files.copy(path, destPath);
-                        } catch (IOException e) {
-                            throw new UncheckedIOException(e);
-                        }
-                    });
-        }
+    @Test
+    void recursive() throws IOException {
+        String ext = """
+                generateTsDeclarations {
+                    sourceSet = project.sourceSets.getByName('main')
+                    types = ['org.testing.Child']
+                }""";
+        appendFile(buildFile, ext);
+
+        BuildResult result = GradleRunner.create()
+                .withProjectDir(testProjectDir.toFile())
+                .withPluginClasspath()
+                .withArguments("generateTsDeclarations")
+                .build();
+
+        System.out.println(result.getOutput());
+        Path out = testProjectDir.resolve(Path.of("build", "generated", "java2ts", "types.d.ts"));
+
+        assertFileContains(out, "export declare interface Parent {");
+    }
+
+    @Test
+    void nonRecursive() throws IOException {
+        String ext = """
+                generateTsDeclarations {
+                    sourceSet = project.sourceSets.getByName('main')
+                    types = ['org.testing.Child']
+                    recursive = false
+                }""";
+        appendFile(buildFile, ext);
+
+        BuildResult result = GradleRunner.create()
+                .withProjectDir(testProjectDir.toFile())
+                .withPluginClasspath()
+                .withArguments("generateTsDeclarations")
+                .build();
+
+        System.out.println(result.getOutput());
+        Path out = testProjectDir.resolve(Path.of("build", "generated", "java2ts", "types.d.ts"));
+
+        assertFileNotContains(out, "export declare interface Parent {");
+    }
+
+    @Test
+    void unsupportedTypes() throws IOException {
+        String ext = """
+                generateTsDeclarations {
+                    sourceSet = project.sourceSets.getByName('main')
+                    types = ['org.testing.Child']
+                    unsupportedTypes = ['org.testing.Parent']
+                }""";
+        appendFile(buildFile, ext);
+
+        BuildResult result = GradleRunner.create()
+                .withProjectDir(testProjectDir.toFile())
+                .withPluginClasspath()
+                .withArguments("generateTsDeclarations")
+                .build();
+
+        System.out.println(result.getOutput());
+        Path out = testProjectDir.resolve(Path.of("build", "generated", "java2ts", "types.d.ts"));
+
+        assertFileContains(out, "export declare interface Child {");
+        assertFileNotContains(out, "export declare interface Parent {");
+    }
+
+    @Test
+    void failForEmptyTypes() throws IOException {
+        String ext = """
+                generateTsDeclarations {
+                    sourceSet = project.sourceSets.getByName('main')
+                }""";
+        appendFile(buildFile, ext);
+
+        GradleRunner runner = GradleRunner.create()
+                .withProjectDir(testProjectDir.toFile())
+                .withPluginClasspath()
+                .withArguments("generateTsDeclarations");
+        assertThrows(UnexpectedBuildFailure.class, runner::build);
+    }
+
+    @Test
+    void failForEmptySourceSet() throws IOException {
+        String ext = """
+                generateTsDeclarations {
+                    types = ['org.testing.Child']
+                }""";
+        appendFile(buildFile, ext);
+
+        GradleRunner runner = GradleRunner.create()
+                .withProjectDir(testProjectDir.toFile())
+                .withPluginClasspath()
+                .withArguments("generateTsDeclarations");
+        assertThrows(UnexpectedBuildFailure.class, runner::build);
+    }
+
+    @Test
+    void nameResolver() throws IOException {
+        String ext = """
+                generateTsDeclarations {
+                    sourceSet = project.sourceSets.getByName('main')
+                    types = ['org.testing.Child']
+                    nameResolver = { type -> type.getSimpleName() + 'xxx' }
+                }""";
+        appendFile(buildFile, ext);
+
+        BuildResult result = GradleRunner.create()
+                .withProjectDir(testProjectDir.toFile())
+                .withPluginClasspath()
+                .withArguments("generateTsDeclarations", "--stacktrace")
+                .build();
+
+        System.out.println(result.getOutput());
+        Path out = testProjectDir.resolve(Path.of("build", "generated", "java2ts", "types.d.ts"));
+
+        assertFileContains(out, "export declare interface Parentxxx {");
+    }
+
+    @Test
+    void sorting() throws IOException {
+        String ext = """
+                generateTsDeclarations {
+                    sourceSet = project.sourceSets.getByName('main')
+                    types = ['org.testing.Sorted']
+                }""";
+        appendFile(buildFile, ext);
+
+        BuildResult result = GradleRunner.create()
+                .withProjectDir(testProjectDir.toFile())
+                .withPluginClasspath()
+                .withArguments("generateTsDeclarations")
+                .build();
+
+        System.out.println(result.getOutput());
+        Path out = testProjectDir.resolve(Path.of("build", "generated", "java2ts", "types.d.ts"));
+
+        assertFileContainsExactly(out, """
+                                        export declare interface Sorted {
+                                            a(): number
+                                            b(): void
+                                            c(arg0: string | null): string | null
+                                            d(): void
+                                            e(): void
+                                            f(): void
+                                            g(): void
+                                        }""");
     }
 }

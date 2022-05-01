@@ -8,10 +8,11 @@ import java.util.stream.Stream;
 
 public class TsGenerator {
 
-    private final Set<Type> unsupportedTypes = Set.of(Object.class, Class.class);
+    private final List<Class<?>> registeredTypes = new ArrayList<>();
     private final Map<Class<?>, ComplexType> typesCache = new LinkedHashMap<>();
     private final Map<TypeVariable<?>, GenericType> genericsCache = new HashMap<>();
 
+    private Set<? extends Type> unsupportedTypes = Set.of(Object.class, Class.class);
     private boolean sortingEnabled = true;
     private Function<Class<?>, String> nameResolver = clazz -> {
         if (clazz.getPackageName().startsWith("java.")) {
@@ -20,6 +21,13 @@ public class TsGenerator {
         return clazz.getSimpleName();
     };
 
+    public String getRegisteredDeclarations() {
+        return registeredTypes.stream()
+                .map(typesCache::get)
+                .map(ComplexType::getTypeDeclaration)
+                .collect(Collectors.joining(System.lineSeparator()));
+    }
+
     public String getAllDeclarations() {
         return typesCache.values().stream()
                 .map(ComplexType::getTypeDeclaration)
@@ -27,7 +35,14 @@ public class TsGenerator {
     }
 
     public void registerType(Class<?> clazz) {
+        Objects.requireNonNull(clazz);
+        registeredTypes.add(clazz);
         resolveClassType(clazz);
+    }
+
+    public void setUnsupportedTypes(Set<? extends Type> unsupportedTypes) {
+        Objects.requireNonNull(unsupportedTypes);
+        this.unsupportedTypes = unsupportedTypes;
     }
 
     public void setSortingEnabled(boolean sortingEnabled) {

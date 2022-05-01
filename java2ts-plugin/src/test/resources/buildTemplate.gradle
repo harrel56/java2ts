@@ -1,6 +1,6 @@
 plugins {
     id 'java'
-    id 'org.harrel.java2ts' version '0.1'
+    id 'org.harrel.java2ts' version '1.0'
 }
 
 java {
@@ -9,9 +9,4 @@ java {
 
 compileJava {
     options.compilerArgs.add('--enable-preview')
-}
-
-generateTsDeclarations {
-    sourceSet = project.sourceSets.getByName('main')
-    types = ['org.testing.Sample']
 }
