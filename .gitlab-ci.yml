@@ -4,18 +4,11 @@ stages:
   - build
   - test
 
-build-core:
+build:
   stage: build
   script:
-    - ./gradlew java2ts-core:build -x test --stacktrace
+    - ./gradlew build -x test --stacktrace
   artifacts:
     paths:
       - 'java2ts-core/build/libs/'
-
-build-plugin:
-  stage: build
-  script:
-    - ./gradlew java2ts-plugin:build -x test --stacktrace
-  artifacts:
-    paths:
       - 'java2ts-plugin/build/libs/'
