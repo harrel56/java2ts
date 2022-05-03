@@ -202,4 +202,41 @@ class PluginTest extends PluginTestBase {
                                             g(): void
                                         }""");
     }
+
+    @Test
+    void externalDependencies() throws IOException {
+        String ext = """
+                sourceSets {
+                    main {
+                        java {
+                            srcDir 'src/external'
+                        }
+                    }
+                }
+                
+                repositories {
+                    mavenCentral()
+                }
+                
+                dependencies {
+                    implementation 'com.google.guava:guava:31.1-jre'
+                }
+                
+                generateTsDeclarations {
+                    sourceSet = project.sourceSets.getByName('main')
+                    types = ['org.testing.External']
+                }""";
+        appendFile(buildFile, ext);
+
+        BuildResult result = GradleRunner.create()
+                .withProjectDir(testProjectDir.toFile())
+                .withPluginClasspath()
+                .withArguments("generateTsDeclarations", "--stacktrace")
+                .build();
+
+        System.out.println(result.getOutput());
+        Path out = testProjectDir.resolve(Path.of("build", "generated", "java2ts", "types.d.ts"));
+
+        assertFileContains(out, "guavaOptional: Optional<string> | null");
+    }
 }

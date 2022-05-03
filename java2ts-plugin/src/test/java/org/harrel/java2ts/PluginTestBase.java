@@ -13,8 +13,7 @@ import java.nio.file.StandardOpenOption;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 abstract class PluginTestBase {
 
@@ -44,24 +43,27 @@ abstract class PluginTestBase {
     void assertFileContains(Path file, String content) throws IOException {
         assertTrue(Files.exists(file));
         try (var reader = Files.newBufferedReader(file)) {
-            var match = reader.lines().anyMatch(l -> l.contains(content));
-            assertTrue(match);
+            String fileContent = reader.lines().collect(Collectors.joining("\n"));
+            System.out.println(fileContent);
+            assertTrue(fileContent.contains(content));
         }
     }
 
     void assertFileNotContains(Path file, String content) throws IOException {
         assertTrue(Files.exists(file));
         try (var reader = Files.newBufferedReader(file)) {
-            var match = reader.lines().noneMatch(l -> l.contains(content));
-            assertTrue(match);
+            String fileContent = reader.lines().collect(Collectors.joining("\n"));
+            System.out.println(fileContent);
+            assertFalse(fileContent.contains(content));
         }
     }
 
     void assertFileContainsExactly(Path file, String content) throws IOException {
         assertTrue(Files.exists(file));
         try (var reader = Files.newBufferedReader(file)) {
-            var out = reader.lines().collect(Collectors.joining("\n"));
-            assertEquals(content, out);
+            String fileContent = reader.lines().collect(Collectors.joining("\n"));
+            System.out.println(fileContent);
+            assertEquals(content, fileContent);
         }
     }
 
