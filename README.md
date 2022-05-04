@@ -76,7 +76,7 @@ generateTsDeclarations {
 
     // predicate for Class<?> class, return true if type should be processed (unsupported types will use 'any' type)
     // default value: supports all except Object.class and Class.class
-    unsupportedTypes = { type -> type.getPackageName().contains("java.") }
+    supportedPredicate = { type -> type.getPackageName().contains("java.") }
     
     // function which will be used to map Class objects to typescript type names
     // please don't use stateful Closures to ensure its serializability
