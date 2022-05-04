@@ -95,4 +95,21 @@ class TsGeneratorTest {
         assertTrue(out.contains("m1(i: number): number\n"), out);
         assertTrue(out.contains("m1(x: number, l: number[] | null): number\n"), out);
     }
+
+    @Test
+    void covariantOverride() {
+        interface Parent {
+            Number m();
+        }
+        interface Child extends Parent {
+            Long m();
+        }
+        TsGenerator gen = new TsGenerator();
+        gen.registerType(Child.class);
+        String out = gen.getAllDeclarations();
+        assertTrue(out.contains("""
+                interface Child extends Parent {
+                    m(): number | null
+                }"""), out);
+    }
 }
