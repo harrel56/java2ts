@@ -36,9 +36,9 @@ TsGenerator gen = new TsGenerator();
 // default value: true
 gen.setSortingEnabled(false);
 
-// set of unsupported types which should not be processed, will use 'any' type
-// default value: Set.of(Object.class, Class.class)
-gen.setUnsupportedTypes(Set.of(Iterable.class, Consumer.class));
+// predicate for Class<?> class, return true if type should be processed (unsupported types will use 'any' type)
+// default value: supports all except Object.class and Class.class
+gen.setSupportedPredicate(t -> t.getPackageName().contains("java."));
 
 // function which will be used to map Class objects to typescript type names
 // default value: prefixes classes from 'java.*' package with 'J'
@@ -74,9 +74,9 @@ generateTsDeclarations {
     // default value: true
     sorting = false
 
-    // set of unsupported types which should not be processed, will use 'any' type
-    // default value: ['java.lang.Object', 'java.lang.Class']
-    unsupportedTypes = ['org.testing.Parent']
+    // predicate for Class<?> class, return true if type should be processed (unsupported types will use 'any' type)
+    // default value: supports all except Object.class and Class.class
+    unsupportedTypes = { type -> type.getPackageName().contains("java.") }
     
     // function which will be used to map Class objects to typescript type names
     // please don't use stateful Closures to ensure its serializability

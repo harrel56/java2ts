@@ -25,10 +25,13 @@ public class JavaToTsPlugin implements Plugin<Project> {
             task.getOutput().set(extension.getOutput().orElse(() -> getDefaultOutput(project)));
             task.getSorting().set(extension.getSorting());
             task.getRecursive().set(extension.getRecursive());
-            task.getUnsupportedTypes().set(extension.getUnsupportedTypes());
+            if(extension.getSupportedPredicate().isPresent()) {
+                var serial = closureToPredicate(extension.getSupportedPredicate().get());
+                task.getSupportedPredicate().set(serial);
+            }
 
             if (extension.getNameResolver().isPresent()) {
-                SerializableFunction<Class<?>, String> serial = closureToFunction(extension.getNameResolver().get());
+                var serial = closureToFunction(extension.getNameResolver().get());
                 task.getNameResolver().set(serial);
             }
         });
@@ -40,6 +43,11 @@ public class JavaToTsPlugin implements Plugin<Project> {
 
     private SerializableFunction<Class<?>, String> closureToFunction(Closure<String> closure) {
         Closure<String> dehydrated = closure.dehydrate();
+        return dehydrated::call;
+    }
+
+    private SerializablePredicate<Class<?>> closureToPredicate(Closure<Boolean> closure) {
+        Closure<Boolean> dehydrated = closure.dehydrate();
         return dehydrated::call;
     }
 }

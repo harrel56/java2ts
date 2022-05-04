@@ -16,11 +16,13 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Files;
-import java.util.Set;
 import java.util.function.Function;
-import java.util.stream.Collectors;
+import java.util.function.Predicate;
 
 interface SerializableFunction<T, R> extends Function<T, R>, Serializable {
+}
+
+interface SerializablePredicate<T> extends Predicate<T>, Serializable {
 }
 
 public abstract class GenerateTsDeclarationsTask extends DefaultTask {
@@ -42,7 +44,7 @@ public abstract class GenerateTsDeclarationsTask extends DefaultTask {
 
     @Input
     @Optional
-    public abstract SetProperty<String> getUnsupportedTypes();
+    public abstract Property<SerializablePredicate<Class<?>>> getSupportedPredicate();
 
     @Input
     @Optional
@@ -59,7 +61,7 @@ public abstract class GenerateTsDeclarationsTask extends DefaultTask {
                 .toArray(URL[]::new);
 
         try (URLClassLoader ucl = new URLClassLoader(urls, ClassLoader.getSystemClassLoader())) {
-            TsGenerator gen = createTsGenerator(ucl);
+            TsGenerator gen = createTsGenerator();
             for (String typeName : getTypes().get()) {
                 gen.registerType(loadClass(ucl, typeName));
             }
@@ -70,14 +72,11 @@ public abstract class GenerateTsDeclarationsTask extends DefaultTask {
 
     }
 
-    private TsGenerator createTsGenerator(URLClassLoader ucl) {
+    private TsGenerator createTsGenerator() {
         TsGenerator gen = new TsGenerator();
         gen.setSortingEnabled(Boolean.TRUE.equals(getSorting().getOrElse(true)));
-        if (!getUnsupportedTypes().getOrElse(Set.of()).isEmpty()) {
-            var clazzSet = getUnsupportedTypes().get().stream()
-                    .map(name -> loadClass(ucl, name))
-                    .collect(Collectors.toSet());
-            gen.setUnsupportedTypes(clazzSet);
+        if (getSupportedPredicate().isPresent()) {
+            gen.setSupportedPredicate(getSupportedPredicate().get());
         }
         if (getNameResolver().isPresent()) {
             gen.setNameResolver(getNameResolver().get());

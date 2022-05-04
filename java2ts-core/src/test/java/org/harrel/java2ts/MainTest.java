@@ -3,6 +3,7 @@ package org.harrel.java2ts;
 import org.junit.jupiter.api.Test;
 
 import java.io.Serializable;
+import java.util.List;
 
 class MainTest {
 //    public Integer integerField;
@@ -19,7 +20,8 @@ class MainTest {
     @Test
     void main() {
         TsGenerator gen = new TsGenerator();
-        gen.registerType(Ov2.class);
+//        gen.setSupportedPredicate(c -> !c.getPackageName().contains("java.reflection"));
+        gen.registerType(List.class);
         System.out.println(gen.getAllDeclarations());
     }
 

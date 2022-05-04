@@ -3,6 +3,7 @@ package org.harrel.java2ts;
 import java.lang.reflect.*;
 import java.util.*;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -12,8 +13,8 @@ public class TsGenerator {
     private final Map<Class<?>, ComplexType> typesCache = new LinkedHashMap<>();
     private final Map<TypeVariable<?>, GenericType> genericsCache = new HashMap<>();
 
-    private Set<? extends Type> unsupportedTypes = Set.of(Object.class, Class.class);
     private boolean sortingEnabled = true;
+    private Predicate<Class<?>> supportedPredicate = type -> !Set.of(Object.class, Class.class).contains(type);
     private Function<Class<?>, String> nameResolver = clazz -> {
         if (clazz.getPackageName().startsWith("java.")) {
             return "J" + clazz.getSimpleName();
@@ -40,9 +41,9 @@ public class TsGenerator {
         resolveClassType(clazz);
     }
 
-    public void setUnsupportedTypes(Set<? extends Type> unsupportedTypes) {
-        Objects.requireNonNull(unsupportedTypes);
-        this.unsupportedTypes = unsupportedTypes;
+    public void setSupportedPredicate(Predicate<Class<?>> predicate) {
+        Objects.requireNonNull(predicate);
+        this.supportedPredicate = predicate;
     }
 
     public void setSortingEnabled(boolean sortingEnabled) {
@@ -62,7 +63,7 @@ public class TsGenerator {
 
     private TsType resolveType(Type mainType) {
         return switch (mainType) {
-            case ParameterizedType type && unsupportedTypes.contains(type.getRawType()) -> SimpleType.ANY;
+            case ParameterizedType type && resolveUnsupportedType(type.getRawType()).isPresent() -> SimpleType.ANY;
             case ParameterizedType type ->
                     new ParamType(resolveType(type.getRawType()), resolveTypes(type.getActualTypeArguments()));
             case GenericArrayType type -> new ArrayType(resolveType(type.getGenericComponentType()));
@@ -99,8 +100,12 @@ public class TsGenerator {
                 .orElseGet(() -> resolveComplexType(clazz));
     }
 
-    private Optional<TsType> resolveUnsupportedType(Class<?> clazz) {
-        return unsupportedTypes.contains(clazz) ? Optional.of(SimpleType.ANY) : Optional.empty();
+    private Optional<TsType> resolveUnsupportedType(Type type) {
+        if(type instanceof Class<?> clazz && !supportedPredicate.test(clazz)) {
+            return Optional.of(SimpleType.ANY);
+        } else {
+            return Optional.empty();
+        }
     }
 
     private Optional<TsType> resolveArrayType(Class<?> clazz) {
@@ -152,16 +157,9 @@ public class TsGenerator {
     }
 
     private List<Type> getSuperTypes(Class<?> clazz) {
-        List<Type> res = new ArrayList<>();
-        if (clazz.getSuperclass() != null && !unsupportedTypes.contains(clazz.getSuperclass())) {
-            res.add(clazz.getGenericSuperclass());
-        }
-        for (Type type : clazz.getGenericInterfaces()) {
-            if (!unsupportedTypes.contains(type)) {
-                res.add(type);
-            }
-        }
-        return res;
+        return Stream.concat(Stream.ofNullable(clazz.getGenericSuperclass()), Arrays.stream(clazz.getGenericInterfaces()))
+                .filter(t -> resolveUnsupportedType(t).isEmpty())
+                .toList();
     }
 
     private Type[] getGenericBounds(Type[] bounds) {

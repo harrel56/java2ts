@@ -16,7 +16,7 @@ public abstract class GenerateExtension {
 
     public abstract Property<Boolean> getRecursive();
 
-    public abstract SetProperty<String> getUnsupportedTypes();
+    public abstract Property<Closure<Boolean>> getSupportedPredicate();
 
     public abstract Property<Closure<String>> getNameResolver();
 

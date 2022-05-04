@@ -99,12 +99,12 @@ class PluginTest extends PluginTestBase {
     }
 
     @Test
-    void unsupportedTypes() throws IOException {
+    void supportedPredicate() throws IOException {
         String ext = """
                 generateTsDeclarations {
                     sourceSet = project.sourceSets.getByName('main')
                     types = ['org.testing.Child']
-                    unsupportedTypes = ['org.testing.Parent']
+                    supportedPredicate = { type -> !"Parent".equals(type.getSimpleName()) }
                 }""";
         appendFile(buildFile, ext);
 
