@@ -19,6 +19,16 @@ class ClassUtil {
         return Arrays.stream(clazz.getDeclaredMethods())
                 .filter(m -> Modifier.isPublic(m.getModifiers()))
                 .filter(m -> !Modifier.isStatic(m.getModifiers()))
+                .filter(m -> !isCovariantDuplicate(m))
                 .toList();
+    }
+
+    private static boolean isCovariantDuplicate(Method method) {
+        try {
+            Method declaredMethod = method.getDeclaringClass().getDeclaredMethod(method.getName(), method.getParameterTypes());
+            return method.getReturnType() != declaredMethod.getReturnType();
+        } catch (NoSuchMethodException e) {
+            throw new IllegalStateException(e);
+        }
     }
 }
