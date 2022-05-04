@@ -75,6 +75,7 @@ generateTsDeclarations {
     sorting = false
 
     // predicate for Class<?> class, return true if type should be processed (unsupported types will use 'any' type)
+    // please don't use stateful Closures to ensure its serializability
     // default value: supports all except Object.class and Class.class
     supportedPredicate = { type -> type.getPackageName().contains("java.") }
     
