@@ -48,7 +48,7 @@ class ComplexType implements TsType {
                 .collect(Collectors.joining(INDENTED_NEW_LINE));
 
         String methodsString = methods.stream()
-                .map(Object::toString)
+                .map(np -> np.name() + np.type().getTypeName())
                 .collect(Collectors.joining(INDENTED_NEW_LINE));
 
         String body = Stream.of(fieldsString, methodsString)

@@ -15,9 +15,6 @@ record NamedProperty(String name, TsType type) implements Comparable<NamedProper
 
     @Override
     public String toString() {
-        return switch(type) {
-            case FunctionType t -> name + t.getTypeName();
-            default -> name + ": " + type.getNullableTypeName();
-        };
+        return name + ": " + type.getNullableTypeName();
     }
 }

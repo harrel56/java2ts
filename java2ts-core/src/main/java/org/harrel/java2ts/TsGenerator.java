@@ -97,11 +97,12 @@ public class TsGenerator {
         return resolveUnsupportedType(clazz)
                 .or(() -> SimpleType.fromClass(clazz))
                 .or(() -> resolveArrayType(clazz))
+                .or(() -> resolveFunctionalInterfaceType(clazz))
                 .orElseGet(() -> resolveComplexType(clazz));
     }
 
     private Optional<TsType> resolveUnsupportedType(Type type) {
-        if(type instanceof Class<?> clazz && !supportedPredicate.test(clazz)) {
+        if (type instanceof Class<?> clazz && !supportedPredicate.test(clazz)) {
             return Optional.of(SimpleType.ANY);
         } else {
             return Optional.empty();
@@ -112,6 +113,15 @@ public class TsGenerator {
         if (clazz.isArray()) {
             TsType elementType = resolveClassType(clazz.getComponentType());
             return Optional.of(new ArrayType(elementType));
+        } else {
+            return Optional.empty();
+        }
+    }
+
+    private Optional<TsType> resolveFunctionalInterfaceType(Class<?> clazz) {
+        if (clazz.isAnnotationPresent(FunctionalInterface.class)) {
+            Method method = ClassUtil.getFunctionalMethod(clazz);
+            return Optional.of(resolveFunctionType(method));
         } else {
             return Optional.empty();
         }
@@ -139,13 +149,7 @@ public class TsGenerator {
         }
 
         for (Method method : ClassUtil.getPublicMethods(clazz)) {
-            List<NamedProperty> tsArguments = new ArrayList<>();
-            for (Parameter param : method.getParameters()) {
-                tsArguments.add(new NamedProperty(param.getName(), resolveType(param.getParameterizedType())));
-            }
-            TsType returnType = resolveType(method.getGenericReturnType());
-            List<TsType> tsMethodGenericTypes = resolveTypes(method.getTypeParameters());
-            tsFunctions.add(new NamedProperty(method.getName(), new FunctionType(returnType, tsMethodGenericTypes, tsArguments)));
+            tsFunctions.add(new NamedProperty(method.getName(), resolveFunctionType(method)));
         }
 
         if (sortingEnabled) {
@@ -154,6 +158,16 @@ public class TsGenerator {
         }
 
         return complexType;
+    }
+
+    private FunctionType resolveFunctionType(Method method) {
+        List<NamedProperty> tsArguments = new ArrayList<>();
+        for (Parameter param : method.getParameters()) {
+            tsArguments.add(new NamedProperty(param.getName(), resolveType(param.getParameterizedType())));
+        }
+        TsType returnType = resolveType(method.getGenericReturnType());
+        List<TsType> tsMethodGenericTypes = resolveTypes(method.getTypeParameters());
+        return new FunctionType(returnType, tsMethodGenericTypes, tsArguments);
     }
 
     private List<Type> getSuperTypes(Class<?> clazz) {

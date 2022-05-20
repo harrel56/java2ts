@@ -2,8 +2,13 @@ package org.harrel.java2ts;
 
 import org.junit.jupiter.api.Test;
 
+import java.io.BufferedWriter;
+import java.io.IOException;
 import java.io.Serializable;
+import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.LongStream;
 
 class MainTest {
 //    public Integer integerField;
@@ -18,10 +23,10 @@ class MainTest {
     public Gen<String, String, String> gen;
 
     @Test
-    void main() {
+    void main() throws IOException {
         TsGenerator gen = new TsGenerator();
 //        gen.setSupportedPredicate(c -> !c.getPackageName().contains("java.reflection"));
-        gen.registerType(List.class);
+        gen.registerType(Ov3.class);
         System.out.println(gen.getAllDeclarations());
     }
 
@@ -31,6 +36,16 @@ class MainTest {
 
     interface Ov2 extends Ov {
         Ov2 m();
+        void f(Fun f);
+    }
+
+    interface Ov3 {
+        void f(Fun<String> f);
+    }
+
+    @FunctionalInterface
+    interface Fun<T> {
+        void hello(T x);
     }
 
 interface Gen4<T extends Gen4<? super T>> {}

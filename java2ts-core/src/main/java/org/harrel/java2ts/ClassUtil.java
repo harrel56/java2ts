@@ -23,6 +23,13 @@ class ClassUtil {
                 .toList();
     }
 
+    public static Method getFunctionalMethod(Class<?> clazz) {
+        return Arrays.stream(clazz.getDeclaredMethods())
+                .filter(m -> !m.isDefault())
+                .findFirst()
+                .orElseThrow();
+    }
+
     private static boolean isCovariantDuplicate(Method method) {
         try {
             Method declaredMethod = method.getDeclaringClass().getDeclaredMethod(method.getName(), method.getParameterTypes());

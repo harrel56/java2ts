@@ -15,12 +15,9 @@ class ParamType implements TsType {
 
     @Override
     public String getTypeName() {
-        String genericTypesString = genericTypes.stream().
-                map(TsType::getTypeName)
-                .collect(Collectors.joining(", "));
-        if(!genericTypesString.isEmpty()) {
-            genericTypesString = "<" + genericTypesString + ">";
-        }
+        String genericTypesString = genericTypes.stream()
+                .map(TsType::getTypeName)
+                .collect(Collectors.joining(", ", "<", ">"));
         return rawType.getTypeName() + genericTypesString;
     }
 }
