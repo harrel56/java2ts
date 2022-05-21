@@ -10,7 +10,7 @@ import java.util.stream.Stream;
 public class TsGenerator {
 
     private final List<Class<?>> registeredTypes = new ArrayList<>();
-    private final Map<Class<?>, ComplexType> typesCache = new LinkedHashMap<>();
+    private final Map<Class<?>, NamedType> typesCache = new LinkedHashMap<>();
     private final Map<TypeVariable<?>, GenericType> genericsCache = new HashMap<>();
 
     private boolean sortingEnabled = true;
@@ -25,13 +25,13 @@ public class TsGenerator {
     public String getRegisteredDeclarations() {
         return registeredTypes.stream()
                 .map(typesCache::get)
-                .map(ComplexType::getTypeDeclaration)
+                .map(NamedType::getTypeDeclaration)
                 .collect(Collectors.joining(System.lineSeparator()));
     }
 
     public String getAllDeclarations() {
         return typesCache.values().stream()
-                .map(ComplexType::getTypeDeclaration)
+                .map(NamedType::getTypeDeclaration)
                 .collect(Collectors.joining(System.lineSeparator()));
     }
 
@@ -97,8 +97,7 @@ public class TsGenerator {
         return resolveUnsupportedType(clazz)
                 .or(() -> SimpleType.fromClass(clazz))
                 .or(() -> resolveArrayType(clazz))
-                .or(() -> resolveFunctionalInterfaceType(clazz))
-                .orElseGet(() -> resolveComplexType(clazz));
+                .orElseGet(() -> resolveNamedType(clazz));
     }
 
     private Optional<TsType> resolveUnsupportedType(Type type) {
@@ -118,25 +117,28 @@ public class TsGenerator {
         }
     }
 
-    private Optional<TsType> resolveFunctionalInterfaceType(Class<?> clazz) {
-        if (clazz.isAnnotationPresent(FunctionalInterface.class)) {
-            Method method = ClassUtil.getFunctionalMethod(clazz);
-            return Optional.of(resolveFunctionType(method));
-        } else {
-            return Optional.empty();
-        }
-    }
-
-    private ComplexType resolveComplexType(Class<?> clazz) {
+    private NamedType resolveNamedType(Class<?> clazz) {
         if (typesCache.containsKey(clazz)) {
             return typesCache.get(clazz);
         }
 
+        String typeName = nameResolver.apply(clazz);
         List<TsType> tsGenericTypes = new ArrayList<>();
+
+        if (clazz.isAnnotationPresent(FunctionalInterface.class)) {
+            Method method = ClassUtil.getFunctionalMethod(clazz);
+            Holder<FunctionType> functionType = new Holder<>();
+            var lambdaType = new LambdaType(typeName, tsGenericTypes, functionType);
+            typesCache.put(clazz, lambdaType);
+            tsGenericTypes.addAll(resolveTypes(clazz.getTypeParameters()));
+            functionType.setValue(resolveFunctionType(method));
+            return lambdaType;
+        }
+
         List<TsType> tsSuperTypes = new ArrayList<>();
         List<NamedProperty> tsFields = new ArrayList<>();
         List<NamedProperty> tsFunctions = new ArrayList<>();
-        ComplexType complexType = new ComplexType(nameResolver.apply(clazz), tsGenericTypes, tsSuperTypes, tsFields, tsFunctions);
+        ComplexType complexType = new ComplexType(typeName, tsGenericTypes, tsSuperTypes, tsFields, tsFunctions);
         typesCache.put(clazz, complexType);
 
         tsGenericTypes.addAll(resolveTypes(clazz.getTypeParameters()));

@@ -4,38 +4,21 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-class ComplexType implements TsType {
-
+class ComplexType extends NamedType {
     private static final String INDENTED_NEW_LINE = "\n    ";
 
-    private final String name;
-    private final List<TsType> genericTypes;
     private final List<TsType> superTypes;
     private final List<NamedProperty> fields;
     private final List<NamedProperty> methods;
 
     public ComplexType(String name, List<TsType> genericTypes, List<TsType> superTypes, List<NamedProperty> fields, List<NamedProperty> methods) {
-        this.name = name;
-        this.genericTypes = genericTypes;
+        super(name, genericTypes);
         this.superTypes = superTypes;
         this.fields = fields;
         this.methods = methods;
     }
 
-    @Override
-    public String getTypeName() {
-        return name;
-    }
-
     public String getTypeDeclaration() {
-        String genericTypesString = genericTypes.stream()
-                .map(GenericType.class::cast)
-                .map(GenericType::getBoundedTypeName)
-                .collect(Collectors.joining(", "));
-        if (!genericTypesString.isEmpty()) {
-            genericTypesString = "<" + genericTypesString + ">";
-        }
-
         String superTypesString = superTypes.stream().
                 map(TsType::getTypeName)
                 .collect(Collectors.joining(", "));
@@ -59,6 +42,6 @@ class ComplexType implements TsType {
                 export declare interface %s%s%s {
                     %s
                 }"""
-                .formatted(name, genericTypesString, superTypesString, body);
+                .formatted(name, getGenericTypesString(), superTypesString, body);
     }
 }

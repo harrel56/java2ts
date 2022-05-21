@@ -40,7 +40,7 @@ class MainTest {
     }
 
     interface Ov3 {
-        void f(Fun<String> f);
+        void f(Fun<Fun<Fun<Integer>>> f);
     }
 
     @FunctionalInterface
