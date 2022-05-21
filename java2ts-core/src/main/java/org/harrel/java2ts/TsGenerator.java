@@ -122,23 +122,48 @@ public class TsGenerator {
             return typesCache.get(clazz);
         }
 
-        String typeName = nameResolver.apply(clazz);
-        List<TsType> tsGenericTypes = new ArrayList<>();
-
+        String name = nameResolver.apply(clazz);
         if (clazz.isAnnotationPresent(FunctionalInterface.class)) {
-            Method method = ClassUtil.getFunctionalMethod(clazz);
-            Holder<FunctionType> functionType = new Holder<>();
-            var lambdaType = new LambdaType(typeName, tsGenericTypes, functionType);
-            typesCache.put(clazz, lambdaType);
-            tsGenericTypes.addAll(resolveTypes(clazz.getTypeParameters()));
-            functionType.setValue(resolveFunctionType(method));
-            return lambdaType;
+            return resolveLambdaType(clazz, name);
+        } else {
+            return resolveComplexType(clazz, name);
         }
+    }
 
+    private LambdaType resolveLambdaType(Class<?> clazz, String name) {
+        return getSuperTypes(clazz).stream()
+                .map(this::resolveType)
+                .filter(t -> t instanceof ParamType pType ? pType.containsLambdaType() : t instanceof LambdaType)
+                .findFirst()
+                .map(parent -> resolveSubLambdaType(clazz, name, parent))
+                .orElseGet(() -> resolveBaseLambdaType(clazz, name));
+    }
+
+    private LambdaType resolveSubLambdaType(Class<?> clazz, String name, TsType lambdaParent) {
+        List<TsType> tsGenericTypes = new ArrayList<>();
+        var lambdaType = new SubLambdaType(name, tsGenericTypes, lambdaParent);
+        typesCache.put(clazz, lambdaType);
+        tsGenericTypes.addAll(resolveTypes(clazz.getTypeParameters()));
+        return lambdaType;
+    }
+
+    private LambdaType resolveBaseLambdaType(Class<?> clazz, String name) {
+        Method method = ClassUtil.getFunctionalMethod(clazz);
+        List<TsType> tsGenericTypes = new ArrayList<>();
+        Holder<FunctionType> functionType = new Holder<>();
+        var lambdaType = new BaseLambdaType(name, tsGenericTypes, functionType);
+        typesCache.put(clazz, lambdaType);
+        tsGenericTypes.addAll(resolveTypes(clazz.getTypeParameters()));
+        functionType.setValue(resolveFunctionType(method));
+        return lambdaType;
+    }
+
+    private ComplexType resolveComplexType(Class<?> clazz, String name) {
+        List<TsType> tsGenericTypes = new ArrayList<>();
         List<TsType> tsSuperTypes = new ArrayList<>();
         List<NamedProperty> tsFields = new ArrayList<>();
         List<NamedProperty> tsFunctions = new ArrayList<>();
-        ComplexType complexType = new ComplexType(typeName, tsGenericTypes, tsSuperTypes, tsFields, tsFunctions);
+        ComplexType complexType = new ComplexType(name, tsGenericTypes, tsSuperTypes, tsFields, tsFunctions);
         typesCache.put(clazz, complexType);
 
         tsGenericTypes.addAll(resolveTypes(clazz.getTypeParameters()));

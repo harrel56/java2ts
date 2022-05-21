@@ -18,6 +18,15 @@ class ParamType implements TsType {
         String genericTypesString = genericTypes.stream()
                 .map(TsType::getTypeName)
                 .collect(Collectors.joining(", ", "<", ">"));
-        return rawType.getTypeName() + genericTypesString;
+
+        if(rawType instanceof NamedType nType) {
+            return nType.getRawTypeName() + genericTypesString;
+        } else {
+            return rawType.getTypeName() + genericTypesString;
+        }
+    }
+
+    public boolean containsLambdaType() {
+        return rawType instanceof LambdaType;
     }
 }

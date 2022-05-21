@@ -130,4 +130,16 @@ class FunctionalInterfacesTest {
         String out = gen.getAllDeclarations();
         assertTrue(out.contains("type Simple<T, R> = (call: Simple<T, string> | null) => R | null"), out);
     }
+
+    @Test
+    void subFunctionalInterface() {
+        @FunctionalInterface
+        interface Simple<T> extends Function<T, T> {
+        }
+        TsGenerator gen = new TsGenerator();
+        gen.setNameResolver(Class::getSimpleName);
+        gen.registerType(Simple.class);
+        String out = gen.getAllDeclarations();
+        assertTrue(out.contains("type Simple<T> = Function<T, T>"), out);
+    }
 }

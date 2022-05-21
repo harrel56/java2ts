@@ -25,6 +25,8 @@ class ClassUtil {
 
     public static Method getFunctionalMethod(Class<?> clazz) {
         return Arrays.stream(clazz.getDeclaredMethods())
+                .filter(m -> Modifier.isPublic(m.getModifiers()))
+                .filter(m -> !Modifier.isStatic(m.getModifiers()))
                 .filter(m -> !m.isDefault())
                 .findFirst()
                 .orElseThrow();

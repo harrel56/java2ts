@@ -15,13 +15,23 @@ abstract class NamedType implements TsType {
 
     @Override
     public String getTypeName() {
+        String genericsString = "";
+        if (!genericTypes.isEmpty()) {
+            genericsString = genericTypes.stream()
+                    .map(t -> "any")
+                    .collect(Collectors.joining(", ", "<", ">"));
+        }
+        return name + genericsString;
+    }
+
+    public String getRawTypeName() {
         return name;
     }
 
     public abstract String getTypeDeclaration();
 
     String getGenericTypesString() {
-        if(genericTypes.isEmpty()) {
+        if (genericTypes.isEmpty()) {
             return "";
         }
 

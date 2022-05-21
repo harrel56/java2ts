@@ -8,6 +8,8 @@ import java.io.Serializable;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.IntUnaryOperator;
+import java.util.function.UnaryOperator;
 import java.util.stream.LongStream;
 
 class MainTest {
@@ -26,9 +28,12 @@ class MainTest {
     void main() throws IOException {
         TsGenerator gen = new TsGenerator();
 //        gen.setSupportedPredicate(c -> !c.getPackageName().contains("java.reflection"));
-        gen.registerType(Ov3.class);
+        gen.registerType(List.class);
         System.out.println(gen.getAllDeclarations());
     }
+
+    @FunctionalInterface
+    interface Run1 extends Runnable {}
 
     interface Ov {
         Ov m();
@@ -40,7 +45,7 @@ class MainTest {
     }
 
     interface Ov3 {
-        void f(Fun<Fun<Fun<Integer>>> f);
+        void f(Fun f);
     }
 
     @FunctionalInterface
