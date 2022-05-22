@@ -1,13 +1,21 @@
 [![pipeline status](https://gitlab.com/org.harrel/java2ts/badges/master/pipeline.svg)](https://gitlab.com/org.harrel/java2ts/-/commits/master)
 # Java2ts
 
-Lightweight library (with gradle plugin) which generates typescript types definitions from java classes. Supports:
+Java library with gradle plugin, which generates typescript types definitions from java classes. It requires java classes to be loaded in runtime. It does **NOT** support generation from non-compiled java source files.
+
+Supports:
 * fields (only instance, public),
 * methods (only instance, public),
 * inheritance,
-* generics.
+* generics,
+* functional interfaces as lambda types.
+
+### Use case
+
+GraalVM interoperability feature can use *Java* objects in *JavaScript* environment ([Doc](https://www.graalvm.org/22.0/reference-manual/js/#interoperability-with-java)). Unfortunately, seems there is no way to run *TypeScript* code in GraalVM directly.
 
 ### Example
+
 From:
 ```java
 class Child extends Parent<Long> {
@@ -53,6 +61,7 @@ String out1 = gen.getRegisteredDeclarations();
 String out2 = gen.getAllDeclarations();
 ```
 ## java2ts-plugin
+
 Usage in _build.gradle_ file:
 ```groovy
 plugins {
