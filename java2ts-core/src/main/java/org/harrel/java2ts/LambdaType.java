@@ -3,7 +3,7 @@ package org.harrel.java2ts;
 import java.util.List;
 
 abstract class LambdaType extends NamedType {
-    public LambdaType(String name, List<TsType> genericTypes) {
+    LambdaType(String name, List<TsType> genericTypes) {
         super(name, genericTypes);
     }
 

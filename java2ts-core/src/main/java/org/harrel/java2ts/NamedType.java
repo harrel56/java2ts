@@ -8,7 +8,7 @@ abstract class NamedType implements TsType {
     protected final String name;
     protected final List<TsType> genericTypes;
 
-    public NamedType(String name, List<TsType> genericTypes) {
+    NamedType(String name, List<TsType> genericTypes) {
         this.name = name;
         this.genericTypes = genericTypes;
     }
