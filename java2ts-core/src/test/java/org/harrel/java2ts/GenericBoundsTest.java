@@ -2,6 +2,11 @@ package org.harrel.java2ts;
 
 import org.junit.jupiter.api.Test;
 
+import java.io.Serializable;
+import java.util.concurrent.Callable;
+import java.util.function.DoubleSupplier;
+import java.util.function.IntConsumer;
+
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class GenericBoundsTest {
@@ -80,5 +85,18 @@ class GenericBoundsTest {
         String out = gen.getAllDeclarations();
         assertTrue(out.contains("t<T extends Simple<Simple<T>>>(t: T | null): T | null\n"), out);
         assertTrue(out.contains("y<T extends Simple<Simple<T>>>(t: T | null): T | null\n"), out);
+    }
+
+    @Test
+    void multipleBounds() {
+        interface Simple<T extends Serializable & IntConsumer> {
+            <U extends Runnable & Callable<U> & DoubleSupplier> U m();
+        }
+        TsGenerator gen = new TsGenerator();
+        gen.setNameResolver(Class::getSimpleName);
+        gen.registerType(Simple.class);
+        String out = gen.getAllDeclarations();
+        assertTrue(out.contains("interface Simple<T extends Serializable & IntConsumer> {\n"), out);
+        assertTrue(out.contains("m<U extends Runnable & Callable<U> & DoubleSupplier>(): U | null\n"), out);
     }
 }

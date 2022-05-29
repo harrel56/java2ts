@@ -1,15 +1,16 @@
 package org.harrel.java2ts;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 class GenericType implements TsType {
 
     private final String name;
-    private final List<TsType> bound;
+    private final List<TsType> bounds;
 
     public GenericType(String name, List<TsType> bounds) {
         this.name = name;
-        this.bound = bounds;
+        this.bounds = bounds;
     }
 
     @Override
@@ -18,7 +19,13 @@ class GenericType implements TsType {
     }
 
     public String getBoundedTypeName() {
-        String boundString = bound.isEmpty() ? "" : " extends " + bound.get(0).getTypeName();
+        String boundString = bounds.isEmpty() ? "" : " extends " + getBoundsString();
         return getTypeName() + boundString;
+    }
+
+    private String getBoundsString() {
+        return bounds.stream()
+                .map(TsType::getTypeName)
+                .collect(Collectors.joining(" & "));
     }
 }
