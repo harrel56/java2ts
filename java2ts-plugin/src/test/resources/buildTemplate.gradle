@@ -4,9 +4,5 @@ plugins {
 }
 
 java {
-    sourceCompatibility(JavaVersion.VERSION_18)
-}
-
-compileJava {
-    options.compilerArgs.add('--enable-preview')
+    sourceCompatibility(JavaVersion.VERSION_21)
 }

@@ -63,7 +63,7 @@ public class TsGenerator {
 
     private TsType resolveType(Type mainType) {
         return switch (mainType) {
-            case ParameterizedType type && resolveUnsupportedType(type.getRawType()).isPresent() -> SimpleType.ANY;
+            case ParameterizedType type when resolveUnsupportedType(type.getRawType()).isPresent() -> SimpleType.ANY;
             case ParameterizedType type ->
                     new ParamType(resolveType(type.getRawType()), resolveTypes(type.getActualTypeArguments()));
             case GenericArrayType type -> new ArrayType(resolveType(type.getGenericComponentType()));
