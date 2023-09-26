@@ -3,9 +3,10 @@ package dev.harrel.java2ts;
 import groovy.lang.Closure;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
+import org.gradle.api.file.RegularFile;
+import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.SourceSet;
 
-import java.io.File;
 import java.util.Set;
 
 public class JavaToTsPlugin implements Plugin<Project> {
@@ -18,11 +19,11 @@ public class JavaToTsPlugin implements Plugin<Project> {
             task.dependsOn(sourceSet.getCompileJavaTaskName());
             task.getSourceFiles().set(sourceSet.getRuntimeClasspath().plus(sourceSet.getOutput().getClassesDirs()).getFiles());
             if (extension.getTypes().getOrElse(Set.of()).isEmpty()) {
-                task.getTypes().set((Iterable<? extends String>) null);
+                task.getTypes().set((Iterable<String>) null);
             } else {
                 task.getTypes().set(extension.getTypes());
             }
-            task.getOutput().set(extension.getOutput().orElse(() -> getDefaultOutput(project)));
+            task.getOutput().set(extension.getOutput().orElse(getDefaultOutput(project)));
             task.getSorting().set(extension.getSorting());
             task.getRecursive().set(extension.getRecursive());
             if(extension.getSupportedPredicate().isPresent()) {
@@ -37,8 +38,8 @@ public class JavaToTsPlugin implements Plugin<Project> {
         });
     }
 
-    private File getDefaultOutput(Project project) {
-        return project.getBuildDir().toPath().resolve("generated/java2ts/types.d.ts").toFile();
+    private Provider<RegularFile> getDefaultOutput(Project project) {
+        return project.getLayout().getBuildDirectory().file("generated/java2ts/types.d.ts");
     }
 
     private SerializableFunction<Class<?>, String> closureToFunction(Closure<String> closure) {
