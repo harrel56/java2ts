@@ -66,7 +66,7 @@ Usage in _build.gradle_ file:
 ```groovy
 plugins {
     id 'java'
-    id 'org.harrel.java2ts' version '1.0'
+    id 'dev.harrel.java2ts' version '1.0'
 }
 // ...
 generateTsDeclarations {

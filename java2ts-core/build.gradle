@@ -3,7 +3,7 @@ plugins {
     id 'maven-publish'
 }
 
-group 'org.harrel'
+group 'dev.harrel'
 version '0.1'
 
 repositories {

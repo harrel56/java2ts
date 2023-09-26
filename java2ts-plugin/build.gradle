@@ -4,7 +4,7 @@ plugins {
     id 'maven-publish'
 }
 
-group 'org.harrel'
+group 'dev.harrel'
 version '1.0'
 
 repositories {
@@ -32,8 +32,8 @@ test {
 gradlePlugin {
     plugins {
         java2ts {
-            id = 'org.harrel.java2ts'
-            implementationClass = 'org.harrel.java2ts.JavaToTsPlugin'
+            id = 'dev.harrel.java2ts'
+            implementationClass = 'dev.harrel.java2ts.JavaToTsPlugin'
         }
     }
 }
