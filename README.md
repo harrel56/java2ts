@@ -1,5 +1,5 @@
-[![pipeline status](https://gitlab.com/org.harrel/java2ts/badges/master/pipeline.svg)](https://gitlab.com/org.harrel/java2ts/-/commits/master)
 # Java2ts
+[![build](https://github.com/harrel56/java2ts/actions/workflows/build.yml/badge.svg)](https://github.com/harrel56/java2ts/actions/workflows/build.yml)
 
 Java library with gradle plugin, which generates typescript types definitions from java classes. It requires java classes to be loaded in runtime. It does **NOT** support generation from non-compiled java source files.
 
