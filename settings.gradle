@@ -7,6 +7,3 @@ pluginManagement {
 rootProject.name = 'java2ts'
 include 'java2ts-core'
 include 'java2ts-plugin'
-
-include ':examples:project1'
-project(':examples:project1').projectDir = new File('examples/project1')

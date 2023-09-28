@@ -2,7 +2,6 @@ plugins {
     id 'java'
     id 'dev.harrel.java2ts' version '0.1.0'
 }
-//apply plugin: 'dev.harrel.java2ts'
 
 group 'dev.example'
 version '0.1'
