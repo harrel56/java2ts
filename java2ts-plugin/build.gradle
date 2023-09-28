@@ -1,15 +1,13 @@
 plugins {
-    id 'java'
     id 'java-gradle-plugin'
     id 'maven-publish'
 }
 
-group 'dev.harrel'
-version '1.0'
-
 repositories {
     mavenCentral()
 }
+
+version = '0.1.0'
 
 java {
     sourceCompatibility(JavaVersion.VERSION_21)
@@ -30,6 +28,7 @@ test {
 }
 
 gradlePlugin {
+    automatedPublishing = true
     plugins {
         java2ts {
             id = 'dev.harrel.java2ts'

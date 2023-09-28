@@ -26,7 +26,7 @@ public class JavaToTsPlugin implements Plugin<Project> {
             task.getOutput().set(extension.getOutput().orElse(getDefaultOutput(project)));
             task.getSorting().set(extension.getSorting());
             task.getRecursive().set(extension.getRecursive());
-            if(extension.getSupportedPredicate().isPresent()) {
+            if (extension.getSupportedPredicate().isPresent()) {
                 var serial = closureToPredicate(extension.getSupportedPredicate().get());
                 task.getSupportedPredicate().set(serial);
             }
