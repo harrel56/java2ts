@@ -8,6 +8,7 @@ import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.SourceSetContainer;
 
+import java.util.Optional;
 import java.util.Set;
 
 public class JavaToTsPlugin implements Plugin<Project> {
@@ -42,9 +43,9 @@ public class JavaToTsPlugin implements Plugin<Project> {
 
     private Provider<SourceSet> getDefaultSourceSet(Project project) {
         return project.getProviders().provider(() ->
-                project.getExtensions()
-                .getByType(SourceSetContainer.class)
-                .findByName("main"));
+                Optional.ofNullable(project.getExtensions().findByType(SourceSetContainer.class))
+                        .map(s -> s.findByName("main"))
+                        .orElseThrow(() -> new IllegalArgumentException("Source set was not provided and there was no source set named 'main'")));
     }
 
     private Provider<RegularFile> getDefaultOutput(Project project) {

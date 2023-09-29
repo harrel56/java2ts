@@ -1,3 +1,3 @@
 public class Example {
-    public String[] hello;
+    public String[] hello2;
 }
