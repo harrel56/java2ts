@@ -137,18 +137,22 @@ class PluginTest extends PluginTestBase {
     }
 
     @Test
-    void failForEmptySourceSet() throws IOException {
+    void defaultSourceSet() throws IOException {
         String ext = """
                 generateTsDeclarations {
                     types = ['org.testing.Child']
                 }""";
         appendFile(buildFile, ext);
 
-        GradleRunner runner = GradleRunner.create()
+        BuildResult result = GradleRunner.create()
                 .withProjectDir(testProjectDir.toFile())
                 .withPluginClasspath()
-                .withArguments("generateTsDeclarations");
-        assertThrows(UnexpectedBuildFailure.class, runner::build);
+                .withArguments("generateTsDeclarations")
+                .build();
+
+        System.out.println(result.getOutput());
+        Path out = testProjectDir.resolve(Path.of("build", "generated", "java2ts", "types.d.ts"));
+        assertFileContains(out, "export declare interface Child extends Parent {");
     }
 
     @Test

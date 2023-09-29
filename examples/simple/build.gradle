@@ -20,6 +20,6 @@ compileJava {
 }
 
 generateTsDeclarations {
-    sourceSet = project.sourceSets.getByName('main')
+//    sourceSet = project.sourceSets.getByName('main')
     types = ['Example']
 }

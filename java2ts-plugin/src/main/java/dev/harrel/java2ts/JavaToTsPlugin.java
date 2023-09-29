@@ -6,6 +6,7 @@ import org.gradle.api.Project;
 import org.gradle.api.file.RegularFile;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.SourceSet;
+import org.gradle.api.tasks.SourceSetContainer;
 
 import java.util.Set;
 
@@ -15,7 +16,8 @@ public class JavaToTsPlugin implements Plugin<Project> {
         var extension = project.getExtensions().create("generateTsDeclarations", GenerateExtension.class);
 
         project.getTasks().register("generateTsDeclarations", GenerateTsDeclarationsTask.class, task -> {
-            SourceSet sourceSet = extension.getSourceSet().get();
+            SourceSet sourceSet = extension.getSourceSet().orElse(getDefaultSourceSet(project)).get();
+
             task.dependsOn(sourceSet.getCompileJavaTaskName());
             task.getSourceFiles().set(sourceSet.getRuntimeClasspath().plus(sourceSet.getOutput().getClassesDirs()).getFiles());
             if (extension.getTypes().getOrElse(Set.of()).isEmpty()) {
@@ -36,6 +38,13 @@ public class JavaToTsPlugin implements Plugin<Project> {
                 task.getNameResolver().set(serial);
             }
         });
+    }
+
+    private Provider<SourceSet> getDefaultSourceSet(Project project) {
+        return project.getProviders().provider(() ->
+                project.getExtensions()
+                .getByType(SourceSetContainer.class)
+                .findByName("main"));
     }
 
     private Provider<RegularFile> getDefaultOutput(Project project) {
