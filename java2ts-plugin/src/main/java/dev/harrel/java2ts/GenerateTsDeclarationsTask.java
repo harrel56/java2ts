@@ -8,19 +8,10 @@ import org.gradle.api.tasks.*;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Files;
-import java.util.function.Function;
-import java.util.function.Predicate;
-
-interface SerializableFunction<T, R> extends Function<T, R>, Serializable {
-}
-
-interface SerializablePredicate<T> extends Predicate<T>, Serializable {
-}
 
 public abstract class GenerateTsDeclarationsTask extends DefaultTask {
 
@@ -70,7 +61,9 @@ public abstract class GenerateTsDeclarationsTask extends DefaultTask {
 
     private TsGenerator createTsGenerator() {
         TsGenerator gen = new TsGenerator();
-        gen.setSortingEnabled(Boolean.TRUE.equals(getSorting().getOrElse(true)));
+        if (getSorting().isPresent()) {
+            gen.setSortingEnabled(getSorting().get());
+        }
         if (getSupportedPredicate().isPresent()) {
             gen.setSupportedPredicate(getSupportedPredicate().get());
         }

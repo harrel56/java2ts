@@ -22,7 +22,7 @@ class MainTest {
     void main() throws IOException {
         TsGenerator gen = new TsGenerator();
 //        gen.setSupportedPredicate(c -> !c.getPackageName().contains("java.reflection"));
-        gen.registerType(List.class);
+        gen.registerType(SimpleClass.class);
         System.out.println(gen.getAllDeclarations());
     }
 

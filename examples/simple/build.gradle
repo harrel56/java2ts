@@ -3,9 +3,6 @@ plugins {
     id 'dev.harrel.java2ts' version '0.1.0'
 }
 
-group 'dev.example'
-version '0.1'
-
 repositories {
     mavenCentral()
 }

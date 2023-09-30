@@ -17,7 +17,7 @@ public class JavaToTsPlugin implements Plugin<Project> {
         var extension = project.getExtensions().create("generateTsDeclarations", GenerateExtension.class);
 
         project.getTasks().register("generateTsDeclarations", GenerateTsDeclarationsTask.class, task -> {
-            SourceSet sourceSet = extension.getSourceSet().orElse(getDefaultSourceSet(project)).get();
+            SourceSet sourceSet = extension.getSourceSet().convention(getDefaultSourceSet(project)).get();
 
             task.dependsOn(sourceSet.getCompileJavaTaskName());
             task.getSourceFiles().set(sourceSet.getRuntimeClasspath().plus(sourceSet.getOutput().getClassesDirs()).getFiles());
