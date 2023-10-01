@@ -8,6 +8,7 @@ import org.gradle.api.tasks.*;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -54,7 +55,7 @@ public abstract class GenerateTsDeclarationsTask extends DefaultTask {
             }
             writeToOutput(gen);
         } catch (IOException e) {
-            throw new IllegalArgumentException(e);
+            throw new UncheckedIOException(e);
         }
 
     }
