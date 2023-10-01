@@ -47,7 +47,7 @@ public class JavaToTsPlugin implements Plugin<Project> {
         return project.getProviders().provider(() ->
                 Optional.ofNullable(project.getExtensions().findByType(SourceSetContainer.class))
                         .map(s -> s.findByName(MAIN_SOURCE_SET_NAME))
-                        .orElseThrow(() -> new IllegalArgumentException("Source set was not provided and there was no source set named 'main'")));
+                        .orElseThrow(() -> new IllegalArgumentException("Source set was not provided and there was no source set named '%s'".formatted(MAIN_SOURCE_SET_NAME))));
     }
 
     private Provider<RegularFile> getDefaultOutput(Project project) {
