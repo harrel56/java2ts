@@ -10,7 +10,9 @@ public abstract class GenerateExtension {
 
     public abstract Property<SourceSet> getSourceSet();
 
-    public abstract SetProperty<String> getTypes();
+    public abstract SetProperty<String> getIncludeTypes();
+
+    public abstract SetProperty<String> getExcludeTypes();
 
     public abstract Property<Boolean> getSorting();
 

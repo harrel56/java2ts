@@ -9,7 +9,6 @@ import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.SourceSetContainer;
 
 import java.util.Optional;
-import java.util.Set;
 
 import static org.gradle.api.tasks.SourceSet.MAIN_SOURCE_SET_NAME;
 
@@ -22,12 +21,10 @@ public class JavaToTsPlugin implements Plugin<Project> {
             SourceSet sourceSet = extension.getSourceSet().convention(getDefaultSourceSet(project)).get();
 
             task.dependsOn(sourceSet.getCompileJavaTaskName());
-            task.getSourceFiles().set(sourceSet.getRuntimeClasspath().plus(sourceSet.getOutput().getClassesDirs()).getFiles());
-            if (extension.getTypes().getOrElse(Set.of()).isEmpty()) {
-                task.getTypes().set((Iterable<String>) null);
-            } else {
-                task.getTypes().set(extension.getTypes());
-            }
+            task.getRuntimeClasspath().set(sourceSet.getRuntimeClasspath());
+            task.getCompiledSources().set(sourceSet.getOutput().getClassesDirs());
+            task.getIncludeTypes().set(extension.getIncludeTypes());
+            task.getExcludeTypes().set(extension.getExcludeTypes());
             task.getOutput().set(extension.getOutput().orElse(getDefaultOutput(project)));
             task.getSorting().set(extension.getSorting());
             task.getRecursive().set(extension.getRecursive());

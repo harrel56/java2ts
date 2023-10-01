@@ -1,6 +1,7 @@
 package dev.harrel.java2ts;
 
 import org.gradle.api.DefaultTask;
+import org.gradle.api.file.FileCollection;
 import org.gradle.api.file.RegularFileProperty;
 import org.gradle.api.provider.Property;
 import org.gradle.api.provider.SetProperty;
@@ -13,14 +14,29 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Files;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.stream.Collectors;
 
+@CacheableTask
 public abstract class GenerateTsDeclarationsTask extends DefaultTask {
 
     @InputFiles
-    public abstract SetProperty<File> getSourceFiles();
+    @Classpath
+    public abstract Property<FileCollection> getRuntimeClasspath();
+
+    @InputFiles
+    @SkipWhenEmpty
+    @PathSensitive(PathSensitivity.RELATIVE)
+    public abstract Property<FileCollection> getCompiledSources();
 
     @Input
-    public abstract SetProperty<String> getTypes();
+    @Optional
+    public abstract SetProperty<String> getIncludeTypes();
+
+    @Input
+    @Optional
+    public abstract SetProperty<String> getExcludeTypes();
 
     @Input
     @Optional
@@ -44,13 +60,24 @@ public abstract class GenerateTsDeclarationsTask extends DefaultTask {
 
     @TaskAction
     public void generate() {
-        URL[] urls = getSourceFiles().get().stream()
+        FileCollection compiledSources = getCompiledSources().get();
+        Set<String> allTypes = getIncludeTypes().get();
+        if (allTypes.isEmpty()) {
+            allTypes = getAllTypes(compiledSources);
+        }
+        if (!getExcludeTypes().get().isEmpty()) {
+            allTypes = new HashSet<>(allTypes);
+            allTypes.removeAll(getExcludeTypes().get());
+        }
+
+        FileCollection allFiles = getRuntimeClasspath().get().plus(compiledSources);
+        URL[] urls = allFiles.getFiles().stream()
                 .map(this::toURL)
                 .toArray(URL[]::new);
 
         try (URLClassLoader ucl = new URLClassLoader(urls, ClassLoader.getSystemClassLoader())) {
             TsGenerator gen = createTsGenerator();
-            for (String typeName : getTypes().get()) {
+            for (String typeName : allTypes) {
                 gen.registerType(loadClass(ucl, typeName));
             }
             writeToOutput(gen);
@@ -58,6 +85,16 @@ public abstract class GenerateTsDeclarationsTask extends DefaultTask {
             throw new UncheckedIOException(e);
         }
 
+    }
+
+    private Set<String> getAllTypes(FileCollection fileCollection) {
+        String basePath = fileCollection.getAsPath();
+        return fileCollection.getAsFileTree().getFiles().stream()
+                .map(file -> file.getAbsolutePath().substring(basePath.length() + 1))
+                .filter(path -> path.endsWith(".class"))
+                .map(path -> path.substring(0, path.length() - ".class".length()))
+                .map(path -> path.replace(File.separator, "."))
+                .collect(Collectors.toSet());
     }
 
     private TsGenerator createTsGenerator() {

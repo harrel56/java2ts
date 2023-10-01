@@ -2,29 +2,19 @@ package dev.harrel.java2ts;
 
 import org.gradle.testkit.runner.BuildResult;
 import org.gradle.testkit.runner.GradleRunner;
-import org.gradle.testkit.runner.UnexpectedBuildFailure;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.nio.file.Path;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
-
 class PluginTest extends PluginTestBase {
 
     @Test
-    void createDefaultOutputFile() throws IOException {
-        String ext = """
-                generateTsDeclarations {
-                    sourceSet = project.sourceSets.getByName('main')
-                    types = ['org.testing.Sample']
-                }""";
-        appendFile(buildFile, ext);
-
+    void worksForDefaults() throws IOException {
         BuildResult result = GradleRunner.create()
                 .withProjectDir(testProjectDir.toFile())
                 .withPluginClasspath()
-                .withArguments("generateTsDeclarations")
+                .withArguments("generateTsDeclarations", "--stacktrace")
                 .build();
 
         System.out.println(result.getOutput());
@@ -34,11 +24,9 @@ class PluginTest extends PluginTestBase {
     }
 
     @Test
-    void createCustomOutputFile() throws IOException {
+    void createsCustomOutputFile() throws IOException {
         String ext = """
                 generateTsDeclarations {
-                    sourceSet = project.sourceSets.getByName('main')
-                    types = ['org.testing.Sample']
                     output = project.layout.projectDirectory.file("custom")
                 }""";
         appendFile(buildFile, ext);
@@ -59,8 +47,7 @@ class PluginTest extends PluginTestBase {
     void recursive() throws IOException {
         String ext = """
                 generateTsDeclarations {
-                    sourceSet = project.sourceSets.getByName('main')
-                    types = ['org.testing.Child']
+                    includeTypes = ['org.testing.Child']
                 }""";
         appendFile(buildFile, ext);
 
@@ -80,8 +67,7 @@ class PluginTest extends PluginTestBase {
     void nonRecursive() throws IOException {
         String ext = """
                 generateTsDeclarations {
-                    sourceSet = project.sourceSets.getByName('main')
-                    types = ['org.testing.Child']
+                    includeTypes = ['org.testing.Child']
                     recursive = false
                 }""";
         appendFile(buildFile, ext);
@@ -102,8 +88,7 @@ class PluginTest extends PluginTestBase {
     void supportedPredicate() throws IOException {
         String ext = """
                 generateTsDeclarations {
-                    sourceSet = project.sourceSets.getByName('main')
-                    types = ['org.testing.Child']
+                    includeTypes = ['org.testing.Child']
                     supportedPredicate = { type -> !"Parent".equals(type.getSimpleName()) }
                 }""";
         appendFile(buildFile, ext);
@@ -122,45 +107,9 @@ class PluginTest extends PluginTestBase {
     }
 
     @Test
-    void failForEmptyTypes() throws IOException {
-        String ext = """
-                generateTsDeclarations {
-                    sourceSet = project.sourceSets.getByName('main')
-                }""";
-        appendFile(buildFile, ext);
-
-        GradleRunner runner = GradleRunner.create()
-                .withProjectDir(testProjectDir.toFile())
-                .withPluginClasspath()
-                .withArguments("generateTsDeclarations");
-        assertThrows(UnexpectedBuildFailure.class, runner::build);
-    }
-
-    @Test
-    void defaultSourceSet() throws IOException {
-        String ext = """
-                generateTsDeclarations {
-                    types = ['org.testing.Child']
-                }""";
-        appendFile(buildFile, ext);
-
-        BuildResult result = GradleRunner.create()
-                .withProjectDir(testProjectDir.toFile())
-                .withPluginClasspath()
-                .withArguments("generateTsDeclarations")
-                .build();
-
-        System.out.println(result.getOutput());
-        Path out = testProjectDir.resolve(Path.of("build", "generated", "java2ts", "types.d.ts"));
-        assertFileContains(out, "export declare interface Child extends Parent {");
-    }
-
-    @Test
     void nameResolver() throws IOException {
         String ext = """
                 generateTsDeclarations {
-                    sourceSet = project.sourceSets.getByName('main')
-                    types = ['org.testing.Child']
                     nameResolver = { type -> type.getSimpleName() + 'xxx' }
                 }""";
         appendFile(buildFile, ext);
@@ -181,8 +130,7 @@ class PluginTest extends PluginTestBase {
     void sorting() throws IOException {
         String ext = """
                 generateTsDeclarations {
-                    sourceSet = project.sourceSets.getByName('main')
-                    types = ['org.testing.Sorted']
+                    includeTypes = ['org.testing.Sorted']
                 }""";
         appendFile(buildFile, ext);
 
@@ -196,15 +144,15 @@ class PluginTest extends PluginTestBase {
         Path out = testProjectDir.resolve(Path.of("build", "generated", "java2ts", "types.d.ts"));
 
         assertFileContainsExactly(out, """
-                                        export declare interface Sorted {
-                                            a(): number
-                                            b(): void
-                                            c(arg0: string | null): string | null
-                                            d(): void
-                                            e(): void
-                                            f(): void
-                                            g(): void
-                                        }""");
+                export declare interface Sorted {
+                    a(): number
+                    b(): void
+                    c(arg0: string | null): string | null
+                    d(): void
+                    e(): void
+                    f(): void
+                    g(): void
+                }""");
     }
 
     @Test
@@ -217,18 +165,17 @@ class PluginTest extends PluginTestBase {
                         }
                     }
                 }
-                
+                                
                 repositories {
                     mavenCentral()
                 }
-                
+                                
                 dependencies {
                     implementation 'com.google.guava:guava:31.1-jre'
                 }
-                
+                                
                 generateTsDeclarations {
-                    sourceSet = project.sourceSets.getByName('main')
-                    types = ['org.testing.External']
+                    includeTypes = ['org.testing.External']
                 }""";
         appendFile(buildFile, ext);
 
