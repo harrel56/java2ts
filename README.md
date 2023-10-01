@@ -70,10 +70,17 @@ plugins {
 }
 // ...
 generateTsDeclarations {
-    // required. SourceSet from which output we want to load classes
+    // SourceSet from which output we want to load classes
+    // default value: 'main' source set provided by 'java' plugin
     sourceSet = project.sourceSets.getByName('main')
-    // required. Fully qualified names of types you want to register for generation
-    types = ['org.testing.Child']
+    
+    // fully qualified names of types you want to register for generation
+    // default value: empty collection which means all types from source set output
+    includeTypes = ['org.testing.Child']
+
+    // fully qualified names of types you want to exclude
+    // default value: empty collection
+    excludeTypes = ['org.testing.Internal']
 
     // file to which declarations will be written
     // default value: ./build/generated/java2ts/types.d.ts
@@ -95,7 +102,7 @@ generateTsDeclarations {
     
     // determines if declarations for transitive types should also be generated
     // default value: true
-    recursive = false
+    transitive = false
 }
 ```
 
