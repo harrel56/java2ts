@@ -24,6 +24,26 @@ class PluginTest extends PluginTestBase {
     }
 
     @Test
+    void excludesTypes() throws IOException {
+        String ext = """
+                generateTsDeclarations {
+                    excludeTypes = ['org.testing.Sample']
+                }""";
+        appendFile(buildFile, ext);
+
+        BuildResult result = GradleRunner.create()
+                .withProjectDir(testProjectDir.toFile())
+                .withPluginClasspath()
+                .withArguments("generateTsDeclarations", "--stacktrace")
+                .build();
+
+        System.out.println(result.getOutput());
+        Path out = testProjectDir.resolve(Path.of("build", "generated", "java2ts", "types.d.ts"));
+
+        assertFileNotContains(out, "export declare interface Sample {");
+    }
+
+    @Test
     void createsCustomOutputFile() throws IOException {
         String ext = """
                 generateTsDeclarations {
