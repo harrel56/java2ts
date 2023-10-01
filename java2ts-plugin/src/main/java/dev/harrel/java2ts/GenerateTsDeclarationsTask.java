@@ -44,7 +44,7 @@ public abstract class GenerateTsDeclarationsTask extends DefaultTask {
 
     @Input
     @Optional
-    public abstract Property<Boolean> getRecursive();
+    public abstract Property<Boolean> getTransitive();
 
     @Input
     @Optional
@@ -113,7 +113,7 @@ public abstract class GenerateTsDeclarationsTask extends DefaultTask {
 
     private void writeToOutput(TsGenerator gen) throws IOException {
         try (var writer = Files.newBufferedWriter(getOutput().get().getAsFile().toPath())) {
-            if (Boolean.TRUE.equals(getRecursive().getOrElse(true))) {
+            if (Boolean.TRUE.equals(getTransitive().getOrElse(true))) {
                 writer.write(gen.getAllDeclarations());
             } else {
                 writer.write(gen.getRegisteredDeclarations());

@@ -16,7 +16,7 @@ public abstract class GenerateExtension {
 
     public abstract Property<Boolean> getSorting();
 
-    public abstract Property<Boolean> getRecursive();
+    public abstract Property<Boolean> getTransitive();
 
     public abstract Property<Closure<Boolean>> getSupportedPredicate();
 

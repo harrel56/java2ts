@@ -64,7 +64,7 @@ class PluginTest extends PluginTestBase {
     }
 
     @Test
-    void recursive() throws IOException {
+    void transitive() throws IOException {
         String ext = """
                 generateTsDeclarations {
                     includeTypes = ['org.testing.Child']
@@ -84,11 +84,11 @@ class PluginTest extends PluginTestBase {
     }
 
     @Test
-    void nonRecursive() throws IOException {
+    void nonTransitive() throws IOException {
         String ext = """
                 generateTsDeclarations {
                     includeTypes = ['org.testing.Child']
-                    recursive = false
+                    transitive = false
                 }""";
         appendFile(buildFile, ext);
 
