@@ -16,7 +16,4 @@ compileJava {
     options.compilerArgs.add('-parameters')
 }
 
-generateTsDeclarations {
-//    sourceSet = project.sourceSets.getByName('main')
-    types = ['Example']
-}
+generateTsDeclarations {}

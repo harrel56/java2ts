@@ -5,4 +5,4 @@ pluginManagement {
 }
 
 rootProject.name = 'examples'
-include 'simple'
+include 'simple-types'
